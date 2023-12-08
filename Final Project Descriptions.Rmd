@@ -1,0 +1,75 @@
+---
+title: "Final Project Decriptions"
+author: "Sam Pak"
+date: "2023-11-25"
+output: pdf_document
+---
+
+In this document, I will explain explain a bit more about the intentional choices that I made in my visualizations for my final project regarding the balancing of the game Super Smash Bros. Ultimate (Smash Ultimate, or Ultimate for short).
+
+Generally, all of my plots have similar attributes. I tend to use the "FOT-Matisse Pro UB" font, as it is the font I found most similar to Smash Ultimate's logo. I used this font for titles, subtitles, some axis titles, and some axis texts. For the rest of the text within my graphs, I used simpler fonts, such as "Verdana", "Arial Narrow", and "Impact". 
+
+I wanted to represent the game's characters in my plots using images that weren't overwhelming or distracting, yet distinct enough for viewers to have a good idea of which character is which. I chose to use the game's stock icons when able, which are made for this very purpose.
+
+For the most part, my plots have dark graph borders, dark bar borders, legends with color and borders that both match the plot, and omitted minor grid lines. Depending on the plot, some grid lines of one direction were entirely removed. Margins were also added around all of the plots and between texts so that all aspects of the graphs were positioned well.
+
+As for color schemes, I chose to pick basic colors that are easy on the eyes, and the panel background was usually a variant of the plot background to avoid color clashing. I also tried to use panel colors in ways that add meaning, as seen in my first two icon plots. The colors of the character tiers follow a rainbow, where red represents the worst characters and blue represents the best characters; I believe this color scheme is intuitive.
+
+### Plot 1: Tier over Release Order - Large
+
+Plot 1 displays the tiers of each character in Smash Ultimate, sorted from left to right by order in which the character became available in the Super Smash Bros. franchise. I wanted to give the viewers a brief introduction and exposure to these characters/icons in a way that wasn't overwhelming, so the actual information shown is pretty minimal. For extra flavor, I made the darkness of the panel background correspond to the game those characters were released in. I wanted to emphasize the spike in high-level characters near the end, so I used dotted lines and text to annotate over the plot.
+ 
+### Plot 2: Weight over Speed - Large
+
+Plot 2 displays the weight and speed of each character, and the icon sizes are dependent on tier, with better characters being larger and worse characters being smaller. Similar to the previous plot, I used the background to divide the characters into five groups (weight classes) that the Smash community is very familiar with. Because the icons are all different shapes, I felt that a small note in the top right was appropriate for describing the icon sizes, and not some kind of legend. I also chose to point out some outliers since there were not too many.
+
+### Plot 3: Character Popularity - Large
+
+Plot 3 displays the frequencies of each character in the North American 2022 Open for Smash Ultimate. I turned the tournament data into a treemap as I thought it would be interesting to see which characters appear the largest within the one big square. I grouped the characters by tier so that we would be able to see possible correlation between tier and popularity at the tournament. I also decided to color the characters by company, and the colors chosen for each company were based off of each company's logo. I tried to pick colors that somewhat represent the company properly without picking too many similar colors across the organizations. Because the roster is mainly Nintendo characters, I made Nintendo's color a very light red so that it would match with the background. I did this so that viewers could focus on the other companies.
+
+### Plot 4: Character Popularity - Small
+
+Plot 4 displays three different plots, all of which shows frequency in battles over character. I chose to look at data regarding the three players that play Smash Ultimate on my Nintendo Switch the most. Knowing that these three users have very different play styles and pick different characters, I felt that the three players could be generally representative of most casual Smash Ultimate players. Using patchwork, I chose to stack the three plots instead of having them side-by-side as I felt the bars would be nearly unreadable. I kept the y-axis title and the legend for just the middle plot, and I kept the x-axis title for just the bottom plot, all to avoid unnecessary repetition. 
+Because this plot was meant to show the differences in relative frequency and not total count, it felt more appropriate to use percentage values instead of actual values. I limited the plots to just the top 15 pieces of data to avoid overwhelming the viewers and to bring the viewers' attention to just the highest values. I also made the limits of the y-axis for each subplot as low as possible in order for the smaller bars on the right-hand side to remain visible. This plot, as well three others, displays the values as labels next to the corresponding bars.
+
+### Plot 5: Win Ratios - Small
+
+Plot 5 is like a response to Plot 4; it displays three plots in the same player order as Plot 4, but now it shows the top win ratios by character for each player. Most of the aesthetics are the same as the previous plot. Because the plot is not about the actual win ratio values of each observation but about the win ratios relative to other win ratios within the subplot, I felt that changing the y-axis limits to make the bars more visible was also acceptable here. Because it is possible for players to, for example, play a character once and win, it felt necessary to remove all observations where the total battle counts of the character was below 50. 
+
+### Plot 6: Win Ratios 2 - Small
+
+Plot 6 is similar to Plot 5, but instead of looking at the data of three individual players separately, I decided to take the averages of all players on my Nintendo Switch and show the total average win ratios in one plot. Because I was only showing the top characters for the past two plots, I decided to use patchwork to include the top 15 and the bottom 15 characters in terms of average win ratio. Because this was two separate plots and not three, I felt it was more appropriate to display them side-by-side. This way, it is also easier to see how drastic the difference in win ratios are between the two plots.
+
+### Plot 7: Average KOs - Small
+
+Another way to potentially assess character success is not by win ratio, but by the amount of knockouts a character usually gets in a regular game. Plot 7 displays the average amount of KOs per battle over character tier, using the data from all players that have played Ultimate on my Nintendo Switch. I felt that this icon plot would display this information in a way that is easy to understand; I feel that the structure of the plot makes it very easy to see trends within tiers. I made the plot as tall as I could so that icons would overlap as little as possible -- many characters in the same tier have similar KO averages.
+
+### Plot 8: Top 8's - Large
+
+Plot 8 displays the top 15 characters with the highest amount of top 8 placements in Smash Ultimate major tournaments in the first five years of tournament play. I felt that making a horizontal bar plot would make good use of space, and the bars appear to be racing to the right, trying to make as many top 8 placements as possible. I sorted the bars top down from largest to smallest so that the attention would be on the largest bars. Because the values are not in relative frequency, I decided to add an annotation of how many major tournaments there were in the described time period. This plot is interactive, allowing viewers to hover over observations - doing so will display the character's name, parent company, tier, and the players most often associated with that character. Different tiers can be toggled on or off using the legend on the right.
+
+### Plot 9: Major Wins + Seconds over Time - Large
+
+Plot 9 displays the amount of major tournament 1st and 2nd places for each character over time. This plot is animated, allowing viewers to look at the statistics of each character change over time. I wanted to present the data in this way, as viewers can see when certain characters were used more throughout the game's history.
+Similar to Plot 8, the different tiers can be toggled on or off using the legend on the right. I felt that 11 different colors on an animated scatterplot would be overwhelming, so I condensed the 11 tiers to 5 general tiers, and the colors for each tier were darkened to pop out better on the plot. I chose for each frame to be presented for 1.2 seconds each so that the animation does not go by too quickly.
+
+I would have preferred to use the character stock icons like I did in Plots 1, 2, and 7, but ggplot2's ggimage and plotly are not currently compatible. Another observation is that many points overlap, especially the points that represent characters with no wins at all, but I do not mind this since the purpose of the plot is to emphasize the points that have accumulated many wins over time. 
+
+### Sources
+
+1. Data
+- Official Tier List: https://blog.start.gg/ultranks-first-official-ssbu-tier-list-4a35bf3dcfc3
+- Character Popularity: https://www.koopatv.org/2022/04/smash-bros-ultimate-fighter-usage.html
+- Major Wins: https://liquipedia.net/smash/Major_Tournaments/Ultimate
+2. Code
+- Bar Things: https://stackoverflow.com/questions/20220424/bar-plot-no-space-between-bottom-of-geom-and-x-axis-keep-space-above
+- Bar Things 2: https://www.geeksforgeeks.org/change-fill-and-border-color-of-ggplot2-plot-in-r/#
+- Annotations: https://www.sthda.com/english/wiki/ggplot2-texts-add-text-annotations-to-a-graph-in-r-software
+- ggimage: https://stackoverflow.com/questions/2181902/how-to-use-an-image-as-a-point-in-ggplot
+- Margins: https://stackoverflow.com/questions/10836843/ggplot2-plot-area-margins
+- Grid Lines: https://stackoverflow.com/questions/2678141/how-can-i-suppress-the-vertical-gridlines-in-a-ggplot2-plot
+- Legends: https://stackoverflow.com/questions/33765710/force-ggplot-legend-to-show-all-categories-when-no-values-are-present
+- Panel/Plot Backgrounds: https://www.sthda.com/english/wiki/ggplot2-themes-and-background-colors-the-3-elements
+- Sorting Bars By Value: https://stackoverflow.com/questions/40224892/r-plotly-barplot-sort-by-value
+3. Other
+- Character Icons: https://www.ssbwiki.com/Category:Head_icons_(SSBU)

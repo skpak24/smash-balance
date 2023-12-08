@@ -1,0 +1,746 @@
+---
+title: "STAT3280 Final Project"
+author: "Sam Pak (skp3ps)"
+date: "2023-11-23"
+output:
+  html_document: default
+  pdf_document: default
+---
+
+```{r setup, include=FALSE, echo = FALSE}
+knitr::opts_chunk$set(warning=F, message=F)
+pacman::p_load(plotly, ggplot2, ggimage, 
+               dplyr, extrafont, 
+               treemapify, patchwork)
+```
+
+# Super Smash Bros. Ultimate: Is it a Balanced Game?
+
+### Preface
+
+Super Smash Bros. Ultimate (Smash Ultimate, Ultimate) is a crossover fighting game published by Nintendo for the Nintendo Switch gaming system. As of September 23, 2023, the game has over 32 million total sales worldwide, being the third best-selling Nintendo Switch title of all time. As the fifth installment in the Super Smash Bros. (Smash) series, it is undeniably the most popular installment. It is also considered by many to be the most balanced.
+  
+Balancing, in regards to fighting games, is the process of ensuring that characters in a game are relatively equal to each other in terms of general effectiveness. In other words, in a perfectly balanced game, one should be just as likely to win with one character as he/she is to win with any other character. Balancing does not mean that all characters must be similar to one another, and no game is perfectly balanced, but there should not be a select few that have significant advantages over the rest of the character roster. For a game to be considered "well-balanced", most characters should have a chance at winning casual games, and more than just one or two characters should be winning at the competitive level.
+
+Many factors go into the balancing of a fighting game, such as:
+
+- General Strengths and Weaknesses: Regardless of attacks, there are many ways characters can differ. Within Smash games, characters can differ by height, width, weight, and speed.
+- Movesets: Characters have many different moves, and moves have an immense range of variation. There are melee attacks, projectiles, grabs, throws, and more; these can differ by damage output, range, and speed.
+- Frame Data: Every move has frame data, which is information regarding the beginnings and end of various parts of a move. Frame data includes startup frames, active frames, endlag, and other intricate information. Frame data is expressed in frames, and Smash Ultimate runs at 60 frames per second.
+
+\
+
+The balancing of a game is often correlated to the game's overall health. When a game is improperly balanced, players will tend to pick the characters that easily overpower all opposition, and this is clear in the competitive scene. Despite having a very large competitive community, Super Smash Bros. has a history of failing to balance its games properly, and there are two massively infamous examples of character imbalance in the franchise's timeline:
+
+- Standing alone in Super Smash Bros. Brawl's "SS" tier, Meta Knight was undoubtedly the best character in the third Smash installment. The character had very fast ground speed, six jumps (most characters have two), excellent frame data, and almost all of his moves were strong, long-range, and very fast. Because of Meta Knight's dominance in Brawl, most players in tournaments and competitions had to play Meta Knight in order to have a chance at winning. Expectedly, Meta Knight was banned in many tournaments despite being the most played character in the game.
+- Bayonetta is known to be the best character in the fourth Super Smash Bros. installment, Super Smash Bros. 4. She had the best aerial recovery moves, an excellent punish game (ability to capitalize off of opponents' mistakes), and the ability to combo opponents to death. Besides Meta Knight in the previous game, Bayonetta was the only other character under consideration to be seriously banned from competitive play.
+
+In October of 2020, Steve from Mojang's Minecraft was added to Ultimate. Consequently, Ultimate has been under controversy as an aversion for this character has risen. Ultimate players have been finding many new techniques and strategies that make Steve seem extremely unfair to play against. Though I do not plan to look into the intricacies of Steve or any other character, I do have the following questions that I would like to answer:
+
+- In Ultimate, do players tend to pick certain characters over others?
+- In Ultimate, do certain characters have higher win rates? Are some characters outright better?
+  - Do these trends differ based on competitive/casual play?
+
+- **Is Super Smash Bros. Ultimate a well-balanced game?**
+
+My hopes are that existing Smash players will become more knowledgeable in the game through my analyses, and that non-players would also gain an understanding on whether or not Smash Ultimate is a game worth buying and trying.
+
+\
+
+### Part 1: General Character Information
+
+As a preliminary introduction to Smash Ultimate, the following plot presents every character released in Smash Ultimate, according to their associated tier. The tier of given character represents the viability or effectiveness of said character, ranging from D- (bottom tier) to S+ (top tier). The tiers were determined by surveying players that have been ranked top 100 in one of six global rankings during the year 2022. The characters are represented by their corresponding stock icons, which are used within the game as the life counts of each character. Although the tier list itself already somewhat implies that Smash Ultimate is not well balanced, I would like to see the extent of the tier list's relevance in actual gameplay, both casual and competitive.
+
+```{r, echo = FALSE}
+knitr::include_graphics("/Users/spak/Downloads/School/F23/STAT3280/STAT3280Project/smash_tier_order.png")
+```
+
+There is clear consistency in Smash Ultimate's final character additions, and understandably so -- the last 11 characters added to the game are DLC, or downloadable content. In other words, these fighters do not come with the standalone game and must be purchased to play them, so it makes sense that these characters would be considered better. It would be a bad business decision to sell characters that play worse than the preexisting ones on the original game. Aside from this, the tiers seem somewhat fairly distributed throughout.
+
+\
+
+As previously mentioned, changing the general weaknesses and strengths of characters can affect how balanced a fighting game is. The following plot shows character weight over character speed, both in in-game units. The size of each icon corresponds to the character's tier -- the bigger the icon, the higher the tier.
+
+```{r, echo = FALSE}
+knitr::include_graphics("/Users/spak/Downloads/School/F23/STAT3280/STAT3280Project/smash_weight_speed.png")
+```
+
+As shown above, there are just a few outliers, with most characters falling in the middle/heavyweight categories. Most of the characters also fall in between 0.5 and 1.5 units per frame for speed, though, one extreme outlier is Sonic, with a speed of 3.85. All characters in the featherweight and super heavyweight categories fall in B- tier or worse, which shows that Smash Ultimate does not accommodate for characters being too heavy or too light. 
+
+These two plots slightly suggest that Smash Ultimate may not be well balanced, but we must also look at actual game data to see if the characters play true to their tiers.
+
+\
+
+### Part 2: Character Popularity
+
+As we have seen with Meta Knight in Super Smash Bros. Brawl, tournament players will tend to flock to what is considered the best character available in order to win. The following treemap shows the frequencies of which each character was picked in the North American 2022 Open. Character areas are also colored based on the character's company, with an increased focus on third party companies; it is very possible that players choose characters based on company or franchise.
+
+```{r, echo = FALSE}
+knitr::include_graphics("/Users/spak/Downloads/School/F23/STAT3280/STAT3280Project/smash_tier_treemap.png")
+```
+
+The ten characters most often chosen for games in this tournament were: Sora, Pyra/Mythra, Cloud, Kirby, Link, King K. Rool, Little Mac, Joker, Ness, and Mario.
+
+One interesting observation is that most third-party characters are in high tiers. In other words, 15 out of the 18 characters that are not from Nintendo are A- tier or better. One possible explanation for this is that Nintendo would likely prefer not to make the characters of their collaborators play poorly. Regardless, it doesn't appear that character company and popularity are correlated.
+
+Although many players chose higher-tier characters (Sora, Pyra/Mythra, Cloud), the spread of characters is distributed much more evenly than expected. A surprising amount of players picked D- and D+ tier characters, despite being considered the worst of the game. This suggests that most players are not driven to pick the most "meta-relevant" characters.
+
+\
+
+We will also look at the character selections of casual players. Using the battle data Smash Ultimate collects onto the Nintendo Switch, I used the battle data of two friends (Austin and Jialin) and myself to see if there are any trends in the character choices we make. The top 15 most picked characters are shown below, colored by tier (all of the data collected was before the inception of this project).
+
+```{r, echo = FALSE}
+knitr::include_graphics("/Users/spak/Downloads/School/F23/STAT3280/STAT3280Project/smash_p4_combined.png")
+```
+
+There is a clear difference in the roster of characters we choose. Austin's choices lean towards high-tier characters, while the other two plots are more evenly distributed. Although 14 out of 15 of Austin's top choices are B+ tier or better, the next plot will show if these choices correspond to higher win rates relative to the lower-tier characters he plays.
+
+\
+
+### Part 3: Casual Character Viability
+
+This plot shows the 15 highest win rates for myself, Austin, and Jialin, colored by tier. For a character to qualify for being in the top 15, the player must have used said character at least 50 times. 
+
+```{r, echo = FALSE}
+knitr::include_graphics("/Users/spak/Downloads/School/F23/STAT3280/STAT3280Project/smash_p6_combined.png")
+```
+
+It is difficult to make a strong conclusion with the given data. If winning games were as straightforward as picking high-tier characters, then we would have expected Sam's and Jialin's plots to include better characters as well. Instead, all three players' data appear to imply that the amount of time spent with a given character has a significant effect on that character's win rate, unlike the tier of the character. 
+
+\
+
+It is important to remember that the data above is only pertaining to just three casual players. We also examine all of the battle data from all players on my Switch, which includes 1,600 hours of gameplay from over 50 different casual players, and see which characters have the highest and lowest overall win ratios. Although this data will be slightly skewed in favor of the characters that the better players choose, it will hopefully draw a more fair picture of which characters have better results.
+
+```{r, echo = FALSE}
+knitr::include_graphics("/Users/spak/Downloads/School/F23/STAT3280/STAT3280Project/smash_p_top_bottom.png")
+```
+
+We can also look at the average knockouts per battle for each character. In Smash Ultimate, every player chooses a character and traditionally has three stocks (lives). Attacking other characters so that they either fall off the stage or fly off the top of the screen is considered a knockout.
+
+```{r, echo = FALSE}
+knitr::include_graphics("/Users/spak/Downloads/School/F23/STAT3280/STAT3280Project/smash_kos.png")
+```
+
+Based on these two plots, tier does not appear to be correlated with casual or local success. In fact, there appears to be a greater presence of lower-tier characters being more effective and S-tier characters playing worse. One potential reason for this is that newer players learn to play the game using "better" characters, and once comfortable, these players try out harder, "worse" characters. In other words, it is possible that, regarding my personal Switch's data, the better players like to play the worse characters, while the less experienced players resort to the fighters that are generally accepted as higher-tier. Another explanation is that most of my battle data consists of multiplayer battles, where up to 8 players can all fight at once. In these situations, it may be best to pick characters of lower tiers; these tiers include larger, stronger characters that deal massive amounts of damage to large areas but have trouble in one-on-one battles against small, fast fighters, which is what the tier list is based on.
+
+Though the sample size has increased from 3 to over 50, this data is still insufficient in representing the entire population of Smash players, nor does it give any insight on the competitive scene. Will this lack of correlation also be present in competitive play?
+
+\
+
+### Part 4: Competitive Character Viability
+
+The Smash Ultimate competitive scene is very large, with thousands of players seeking to make their name known in the gaming community. Smash Ultimate has had 35 "major tournaments" in 2023 alone -- major tournaments being tournaments with a good amount of highly ranked players and a large prize pool, some of which being in the tens of thousands of dollars. The following figure shows the top 15 characters with the most amount of high placements (1st through 8th place) in Smash Ultimate major tournaments in a 5-year span. 
+
+```{r, echo = FALSE}
+
+base5<- data.frame(
+  name = c(
+    "Mario", "Donkey Kong", "Link", "Samus/\nDark\nSamus", 
+    "Yoshi", "Kirby", "Fox", "Pikachu", "Luigi", 
+    "Ness", "Captain Falcon", "Jigglypuff", "Peach/Daisy", 
+    "Bowser", "Ice Climbers", "Sheik", "Zelda", "Dr Mario",
+    "Pichu", "Falco", "Marth", "Lucina", "Young Link",
+    "Ganondorf", "Mewtwo", "Roy", "Chrom", "Mr. Game\n& Watch",
+    "Meta Knight", "Pit", "Dark Pit", "Zero Suit\nSamus", "Wario", 
+    "Snake", "Ike", "Pokemon\nTrainer", "Diddy Kong", "Lucas", 
+    "Sonic", "King Dedede", "Olimar", "Lucario", "R.O.B.", 
+    "Toon Link", "Wolf", "Villager", "Mega Man", "Wii Fit Trainer", 
+    "Rosalina\n& Luma", "Little Mac", "Greninja", "Mii Brawler", "Mii Swordfighter", 
+    "Mii Gunner", "Palutena", "Pac-Man", "Robin", "Shulk",
+    "Bowser Jr", "Duck Hunt", "Ryu", "Ken", "Cloud", 
+    "Corrin", "Bayonetta", "Inkling", "Ridley", "Simon", 
+    "Richter", "King K Rool", "Isabelle", "Incineroar", "Piranha Plant", 
+    "Joker", "Hero", "Banjo & Kazooie", "Terry", "Byleth", 
+    "Min Min", "Steve", "Sephiroth", "Pyra/Mythra", "Kazuya",
+    "Sora"
+  ),
+  tier = c(
+    "A+", "C-", "B-", "A+", 
+    "A+", "D+", "S", "S-", "B+", 
+    "B+", "B+", "C+", "S", 
+    "B-", "B-", "A-", "D+", "D+", 
+    "B-", "B+", "B-", "A+", "A-", 
+    "D-", "C+", "S", "B+", "S-", 
+    "B-", "B-", "B-", "A+", "A+", 
+    "S-", "C-", "A+", "S-", "C+", 
+    "S", "D+", "A-", "C-", "S", 
+    "B-", "S-", "C-", "A-", "C+", 
+    "B-", "D-", "A-", "A-", "D+", 
+    "C+", "S-", "S-", "C+", "S-",
+    "C-", "C-", "A-", "A-", "S-",
+    "B+", "B+", "B+", "C+", "C-",
+    "C-", "D+", "D+", "C+", "D+", 
+    "S+", "B+", "C-", "A-", "A-", 
+    "S-", "S+", "A+", "S+", "S",
+    "A-"
+  ),
+   major_top8 = c(
+    14, 6, 4, 12, 
+    8, 0, 37, 10, 5, 
+    10, 9, 2, 25, 
+    7, 3, 10, 0, 3, 
+    13, 5, 2, 33, 5, 
+    3, 1, 28, 10, 21, 
+    2, 0, 0, 36, 50, 
+    25, 7, 16, 11, 0, 
+    20, 2, 44, 1, 32, 
+    4, 27, 1, 14, 1, 
+    25, 0, 10, 1, 0, 
+    0, 42, 21, 1, 10,
+    1, 5, 5, 3, 18,
+    8, 4, 20, 2, 0,
+    0, 2, 1, 1, 1, 
+    36, 5, 2, 11, 15, 
+    16, 13, 13, 34, 16,
+    12
+  ),
+  company = c(
+    "Nintendo", "Nintendo", "Nintendo", "Nintendo",
+    "Nintendo", "Nintendo", "Nintendo", "Nintendo", "Nintendo", 
+    "Nintendo", "Nintendo", "Nintendo", "Nintendo",
+    "Nintendo", "Nintendo", "Nintendo", "Nintendo", "Nintendo", 
+    "Nintendo", "Nintendo", "Nintendo", "Nintendo", "Nintendo", 
+    "Nintendo", "Nintendo", "Nintendo", "Nintendo", "Nintendo", 
+    "Nintendo", "Nintendo", "Nintendo", "Nintendo", "Nintendo", 
+    "Konami", "Nintendo", "Nintendo", "Nintendo", "Nintendo",
+    "Sega", "Nintendo", "Nintendo", "Nintendo", "Nintendo", 
+    "Nintendo", "Nintendo", "Nintendo", "Capcom", "Nintendo", 
+    "Nintendo", "Nintendo", "Nintendo", "Nintendo", "Nintendo", 
+    "Nintendo", "Nintendo", "Bandai Namco", "Nintendo", "Nintendo",
+    "Nintendo", "Nintendo", "Capcom", "Capcom", "Square Enix",
+    "Nintendo", "Sega", "Nintendo", "Nintendo", "Konami",
+    "Konami", "Nintendo", "Nintendo", "Nintendo", "Nintendo", 
+    "Sega", "Square Enix", "Microsoft", "SNK", "Nintendo", 
+    "Nintendo", "Microsoft", "Square Enix", "Nintendo", "Bandai Namco",
+    "Square Enix"
+  ),
+  players = c(
+    "Kurama, Dark Wizzy", "none", "none", "quiK",
+    "Yoshidora", "none", "Light", "ESAM", "Luugi", 
+    "none", "Fatality", "none", "Muteace, Samsora, Umeki", 
+    "Hero", "none", "Eim", "none", "none",
+    "Nietono, VoiD", "none", "none", "MkLeo, ProtoBanham", "none",
+    "none", "none", "Kola", "none", "Miya, Maister",
+    "Abadango", "none", "none", "Marss, Kuro", "Glutonny, Tweek, Abadango", 
+    "Ally, Hurt", "MkLeo", "Atelier, Quidd", "Tweek", "none", 
+    "Sonix, KEN", "Peli", "Shuton, Dabuz, Myran", "none", "Zomba, Anathema, zackray", 
+    "none", "zackray, Jakal", "none", "Kameme", "none", 
+    "Dabuz", "none", "none", "none", "none", 
+    "none", "Nairo", "Tea", "none", "Kome",
+    "none", "none", "Asimo", "none", "Sparg0", 
+    "MkLeo", "Bloom4Eva", "Shirayuki", "none", "none", 
+    "none", "none", "none", "Skyjay", "Brood", 
+    "MkLeo, zackray", "none", "none", "Riddles", "MkLeo, Rizeasu", 
+    "ProtoBanham", "acola, Onin", "KEN", "MkLeo, Shuton, Cosmos", "Riddles",
+    "Kameme, zackray"
+    )
+)
+
+base5$tier <- factor(base5$tier, levels = c("D-", "D+", "C-", "C+", "B-", "B+", "A-", "A+", "S-", "S", "S+"))
+base5<-base5[order(base5$major_top8, decreasing = TRUE),]
+base5<-base5[1:15,]
+base5$name <- factor(base5$name, levels = unique(base5$name)[order(base5$major_top8, decreasing = FALSE)])
+
+p_top8 <- plot_ly(
+    data = base5,
+    x = ~major_top8,
+    y = ~name,
+    size = 10,
+    color = ~tier,
+    colors = c("#f9ffb5", "#b3f5bc", "#c3f5dc", "#D6F6FF", "#BEE0FF", "#a0c4ff"),
+    text = ~paste("Name:", name,
+                  "<br>Company:", company,
+                  "<br>Tier:", tier,
+                  "<br>Notable Players:", players
+                  ),
+    hoverinfo = "text",
+    marker = list(line = list(color = "#00007b",
+                                  width = 1.0)),
+    width = 900,
+    height = 750
+  )%>%layout(
+    title = list(
+      text = "Top 8s in Majors by Character",
+      font = list(
+        family = "FOT-Matisse Pro UB",
+        size = 30,
+        color = "#00007b"
+      )
+    ),
+    xaxis = list(
+      title = list(
+        text = "Frequency",
+        font = list(
+          family = "FOT-Matisse Pro UB",
+          size = 22,
+          color = "#00007b"
+        )
+      ),
+      tickfont = list(
+        family = "Verdana",
+        size = 15,
+        color = "#00007b"
+      )
+    ),
+    yaxis = list(
+      title = list(
+        text = "Character",
+        font = list(
+          family = "FOT-Matisse Pro UB",
+          size = 22,
+        color = "#00007b"
+        )
+      ),
+      tickfont = list(
+        family = "Verdana",
+        size = 15,
+        color = "#00007b"
+      )
+    ),
+    hoverlabel = list(align = "left"),
+    paper_bgcolor = '#cbe6ff',
+    plot_bgcolor = '#e4f3ff',
+    margin = list(l = 100,
+                  r = 100,
+                  b = 100,
+                  t = 100,
+                  pad = 4)
+    )
+p_top8
+```
+
+All characters in this interactive bar plot are ranked B+ tier or higher, with 10 of the characters falling in one of the S tiers. As there has been 99 major tournaments for Smash Ultimate from 2018 to 2022, Mr. Game & Watch is in the top 8 placements 21% of the time, and Wario is in the top 8 placements 51% of the time.
+
+Despite these very high rates, it does not seem that players simply resort to these characters for tournament play. Regarding the treemap above concerning character popularity, one could reasonably assume that Sora, Pyra/Mythra, Cloud, Kirby, and Link, the most popular characters in the North American Open, would have very high tournament placements, but that is not shown by this data. In fact, out of the 15 characters in the plot above, Joker (2.83%) and Pyra/Mythra (4.26%) are the only two "popular" characters from the treemap; the next most popular character on this plot, R.O.B., was chosen 31st most often. 
+
+Regardless, at a competitive standpoint, it appears that one ought to choose higher-tier characters if he or she wants to play and win in large-scale tournaments.
+
+\
+
+We can also look solely at characters that have finished first and/or second place in Ultimate's major tournaments. This should narrow down the roster to the best of the best characters. This animated scatterplot shows the occurrences of first and second place finishes by character from December 2018 to November 2023.
+
+```{r, echo = FALSE}
+maj1=data.frame(
+  name = c(
+      "Mario", "Donkey Kong", "Link", "Samus", "Dark Samus", 
+      "Yoshi", "Kirby", "Fox", "Pikachu", "Luigi", 
+      "Ness", "Capt. Falcon", "Jigglypuff", "Peach", "Daisy", 
+      "Bowser", "Ice Climbers", "Sheik", "Zelda", "Dr. Mario",
+      "Pichu", "Falco", "Marth", "Lucina", "Young Link",
+      "Ganondorf", "Mewtwo", "Roy", "Chrom", "Mr. Game & Watch",
+      "Meta Knight", "Pit", "Dark Pit", "Zero Suit Samus", "Wario", 
+      "Snake", "Ike", "Pokemon Trainer", "Diddy Kong", "Lucas", 
+      "Sonic", "King Dedede", "Olimar", "Lucario", "R.O.B.", 
+      "Toon Link", "Wolf", "Villager", "Mega Man", "Wii Fit Trainer", 
+      "Rosalina & Luma", "Little Mac", "Greninja", "Mii Brawler", "Mii Swordfighter", 
+      "Mii Gunner", "Palutena", "Pac-Man", "Robin", "Shulk",
+      "Bowser Jr", "Duck Hunt", "Ryu", "Ken", "Cloud", 
+      "Corrin", "Bayonetta", "Inkling", "Ridley", "Simon", 
+      "Richter", "King K. Rool", "Isabelle", "Incineroar", "Piranha Plant", 
+      "Joker", "Hero", "Banjo & Kazooie", "Terry", "Byleth", 
+      "Min Min", "Steve", "Sephiroth", "Pyra/Mythra", "Kazuya",
+      "Sora"
+  )
+)
+
+names <- maj1[rep(seq_len(nrow(maj1)), 6), ]
+years <- rep(2018:2023, each = 86)
+
+major_wins<-data.frame(
+  name = names,
+  year = years
+)
+
+major_wins$total_wins<-c(
+  #2018
+  0, 0, 0, 0, 0,
+  0, 0, 0, 0, 0,
+  0, 0, 0, 0, 0,
+  0, 0, 0, 0, 0,
+  0, 0, 0, 0, 0,
+  0, 0, 0, 0, 0,
+  0, 0, 0, 0, 1,
+  0, 0, 0, 0, 0,
+  0, 0, 0, 0, 0,
+  0, 0, 0, 0, 0,
+  0, 0, 0, 0, 0,
+  0, 0, 0, 0, 0,
+  0, 0, 0, 0, 0,
+  0, 0, 0, 0, 0,
+  0, 0, 0, 0, 0,
+  0, 0, 0, 0, 0,
+  0, 0, 0, 0, 0,
+  0,
+  #2019
+  0, 0, 0, 0, 0,
+  0, 0, 0, 1, 0,
+  0, 0, 0, 1, 0,
+  0, 0, 0, 0, 0,
+  1, 0, 0, 1, 0,
+  0, 0, 0, 0, 0,
+  0, 0, 0, 4, 7, 
+  1, 1, 1, 0, 0, 
+  0, 0, 2, 0, 1,
+  0, 1, 0, 2, 0,
+  0, 0, 0, 0, 0,
+  0, 1, 1, 0, 0,
+  0, 0, 0, 0, 0,
+  0, 0, 0, 0, 0,
+  0, 0, 0, 0, 0,
+  9, 0, 0, 0, 0,
+  0, 0, 0, 0, 0,
+  0,
+  #2020
+  0, 0, 0, 0, 0,
+  0, 0, 0, 1, 0,
+  0, 0, 0, 1, 0,
+  0, 0, 0, 0, 0,
+  1, 0, 0, 1, 0,
+  0, 0, 0, 0, 0,
+  0, 0, 0, 5, 8, 
+  1, 1, 1, 0, 0, 
+  0, 0, 3, 0, 2,
+  0, 1, 0, 2, 0,
+  0, 0, 0, 0, 0,
+  0, 2, 1, 0, 0,
+  0, 0, 0, 0, 0,
+  0, 0, 0, 0, 0,
+  0, 0, 0, 0, 0,
+  10, 0, 0, 0, 0,
+  0, 0, 0, 0, 0,
+  0,
+  #2021
+  0, 0, 0, 0, 0,
+  0, 0, 1, 2, 0,
+  0, 0, 0, 1, 0,
+  0, 0, 0, 0, 0,
+  1, 0, 0, 3, 0,
+  0, 0, 1, 0, 0,
+  0, 0, 0, 5, 9, 
+  1, 1, 1, 1, 0, 
+  0, 1, 3, 0, 2,
+  0, 1, 0, 2, 0,
+  0, 0, 0, 0, 0,
+  0, 2, 3, 0, 0,
+  0, 0, 0, 0, 0,
+  0, 0, 0, 0, 0,
+  0, 0, 0, 0, 0,
+  10, 0, 0, 0, 5,
+  1, 0, 0, 0, 0,
+  1,
+  #2022
+  0, 0, 0, 0, 0,
+  1, 0, 2, 2, 0,
+  0, 0, 0, 1, 0,
+  0, 0, 0, 0, 0,
+  1, 0, 0, 4, 0,
+  0, 0, 1, 0, 2,
+  0, 0, 0, 5, 10, 
+  1, 1, 2, 2, 0, 
+  1, 1, 3, 0, 2,
+  0, 1, 0, 2, 0,
+  0, 0, 0, 0, 0,
+  0, 2, 6, 0, 0,
+  0, 0, 0, 0, 5,
+  1, 1, 0, 0, 0,
+  0, 0, 0, 0, 0,
+  12, 0, 0, 0, 9,
+  2, 9, 1, 4, 1,
+  1,
+  #2023
+  0, 0, 0, 0, 0,
+  1, 0, 3, 2, 0,
+  0, 0, 0, 1, 0,
+  0, 0, 0, 0, 0,
+  1, 0, 0, 4, 0,
+  0, 0, 1, 0, 11,
+  0, 0, 0, 5, 12, 
+  1, 1, 2, 3, 0, 
+  3, 1, 4, 0, 3,
+  0, 1, 0, 2, 0,
+  0, 0, 0, 0, 0,
+  0, 2, 6, 0, 0,
+  0, 0, 0, 0, 11,
+  1, 1, 0, 0, 0,
+  0, 0, 0, 0, 0,
+  13, 0, 0, 0, 9,
+  2, 18, 1, 5, 2,
+  1
+)
+
+major_wins$seconds<-c(
+  #2018
+  0, 0, 0, 0, 0,
+  0, 0, 0, 0, 0,
+  0, 0, 0, 0, 0,
+  0, 0, 0, 0, 0,
+  0, 0, 0, 0, 0,
+  0, 0, 0, 0, 0,
+  0, 0, 0, 0, 0,
+  0, 0, 0, 0, 0,
+  0, 0, 1, 0, 0,
+  0, 0, 0, 0, 0,
+  0, 0, 0, 0, 0,
+  0, 0, 0, 0, 0,
+  0, 0, 0, 0, 0,
+  0, 0, 0, 0, 0,
+  0, 0, 0, 0, 0,
+  0, 0, 0, 0, 0,
+  0, 0, 0, 0, 0,
+  0,
+  #2019
+  0, 0, 0, 1, 0,
+  0, 0, 1, 0, 0,
+  0, 0, 0, 4, 0,
+  0, 0, 0, 0, 0,
+  1, 0, 0, 2, 0,
+  0, 0, 0, 0, 0,
+  0, 0, 0, 3, 4,
+  0, 1, 1, 0, 0,
+  1, 0, 7, 0, 0,
+  0, 2, 0, 1, 0,
+  0, 0, 0, 0, 0,
+  0, 1, 1, 0, 0,
+  0, 0, 0, 0, 0,
+  0, 0, 0, 0, 0,
+  0, 0, 0, 0, 1,
+  3, 0, 0, 0, 0,
+  0, 0, 0, 0, 0,
+  0,
+  #2020
+  1, 0, 0, 1, 0,
+  0, 0, 1, 0, 0,
+  0, 0, 0, 4, 0,
+  0, 0, 0, 0, 0,
+  1, 0, 0, 2, 0,
+  0, 0, 0, 0, 1,
+  0, 0, 0, 3, 4,
+  0, 1, 1, 0, 0,
+  1, 0, 7, 0, 0,
+  0, 2, 0, 1, 0,
+  1, 0, 0, 0, 0,
+  0, 2, 1, 0, 1,
+  0, 0, 0, 0, 0,
+  0, 0, 0, 0, 0,
+  0, 0, 0, 0, 1,
+  4, 0, 0, 0, 0,
+  0, 0, 0, 0, 0,
+  0,
+  #2021
+  1, 0, 0, 1, 0,
+  0, 0, 1, 0, 0,
+  0, 1, 0, 4, 0,
+  0, 0, 1, 0, 0,
+  1, 0, 0, 2, 0,
+  0, 0, 0, 0, 1,
+  0, 0, 0, 3, 7,
+  0, 1, 3, 1, 0,
+  1, 0, 9, 0, 0,
+  0, 2, 0, 1, 0,
+  1, 0, 0, 0, 0,
+  0, 2, 1, 0, 1,
+  0, 0, 0, 0, 1,
+  0, 0, 0, 0, 0,
+  0, 0, 0, 0, 1,
+  5, 0, 0, 0, 1,
+  0, 0, 0, 4, 0,
+  0,
+  #2022
+  2, 0, 0, 2, 0,
+  0, 0, 5, 0, 0,
+  0, 1, 0, 4, 1,
+  1, 1, 1, 0, 0,
+  1, 0, 0, 2, 0,
+  0, 0, 2, 0, 5,
+  1, 0, 0, 3, 10,
+  0, 1, 3, 4, 0,
+  1, 0, 10, 0, 2,
+  0, 2, 0, 1, 0,
+  4, 0, 0, 0, 0,
+  0, 3, 2, 0, 1,
+  0, 0, 1, 0, 2,
+  0, 0, 1, 0, 0,
+  0, 0, 0, 0, 1,
+  5, 0, 0, 1, 3,
+  0, 2, 0, 7, 0,
+  0,
+  #2023
+  2, 0, 0, 2, 0,
+  2, 0, 5, 0, 1,
+  0, 1, 0, 5, 1,
+  1, 1, 1, 0, 0,
+  1, 0, 0, 2, 0,
+  0, 0, 2, 0, 8,
+  1, 0, 0, 3, 12,
+  1, 1, 3, 6, 0,
+  4, 0, 11, 0, 2,
+  0, 3, 0, 1, 0,
+  5, 0, 0, 0, 0,
+  0, 3, 3, 0, 1,
+  0, 0, 3, 0, 3,
+  0, 0, 1, 0, 0,
+  0, 0, 0, 1, 1,
+  5, 0, 0, 1, 4,
+  1, 5, 1, 10, 1,
+  2
+)
+
+major_wins$company<-rep(c(
+    "Nintendo", "Nintendo", "Nintendo", "Nintendo", "Nintendo", 
+    "Nintendo", "Nintendo", "Nintendo", "Nintendo", "Nintendo", 
+    "Nintendo", "Nintendo", "Nintendo", "Nintendo", "Nintendo", 
+    "Nintendo", "Nintendo", "Nintendo", "Nintendo", "Nintendo", 
+    "Nintendo", "Nintendo", "Nintendo", "Nintendo", "Nintendo", 
+    "Nintendo", "Nintendo", "Nintendo", "Nintendo", "Nintendo", 
+    "Nintendo", "Nintendo", "Nintendo", "Nintendo", "Nintendo", 
+    "Konami", "Nintendo", "Nintendo", "Nintendo", "Nintendo",
+    "Sega", "Nintendo", "Nintendo", "Nintendo", "Nintendo", 
+    "Nintendo", "Nintendo", "Nintendo", "Capcom", "Nintendo", 
+    "Nintendo", "Nintendo", "Nintendo", "Nintendo", "Nintendo", 
+    "Nintendo", "Nintendo", "Bandai Namco", "Nintendo", "Nintendo",
+    "Nintendo", "Nintendo", "Capcom", "Capcom", "Square Enix",
+    "Nintendo", "Sega", "Nintendo", "Nintendo", "Konami",
+    "Konami", "Nintendo", "Nintendo", "Nintendo", "Nintendo", 
+    "Sega", "Square Enix", "Microsoft", "SNK", "Nintendo", 
+    "Nintendo", "Microsoft", "Square Enix", "Nintendo", "Bandai Namco",
+    "Square Enix"
+  ), 6)
+major_wins$tier<-rep(c(
+    "A", "C", "B", "A", "A", 
+    "A", "D", "S", "S", "B", 
+    "B", "B", "C", "S", "S", 
+    "B", "B", "A", "D", "D", 
+    "B", "B", "B", "A", "A", 
+    "D", "C", "S", "B", "S", 
+    "B", "B", "B", "A", "A", 
+    "S", "C", "A", "S", "C", 
+    "S", "D", "A", "C", "S", 
+    "B", "S", "C", "A", "C", 
+    "B", "D", "A", "A", "D", 
+    "C", "S", "S", "C", "S",
+    "C", "C", "A", "A", "S",
+    "B", "B", "B", "C", "C",
+    "C", "D", "D", "C", "D", 
+    "S", "B", "C", "A", "A", 
+    "S", "S", "A", "S", "S",
+    "A"
+  ), 6)
+major_wins$tier <- factor(major_wins$tier, levels = c("D", "C", "B", "A","S"))
+
+major_wins$players<-rep(c(
+    "Kurama, Dark Wizzy", "none", "none", "quiK", "none", 
+    "Yoshidora", "none", "Light", "ESAM", "Luugi", 
+    "none", "Fatality", "none", "Muteace, Samsora", "Umeki", 
+    "Hero", "none", "Eim", "none", "none",
+    "Nietono, VoiD", "none", "none", "MkLeo, ProtoBanham", "none",
+    "none", "none", "Kola", "none", "Miya, Maister",
+    "Abadango", "none", "none", "Marss, Kuro", "Glutonny, Tweek, Abadango", 
+    "Ally, Hurt", "MkLeo", "Atelier, Quidd", "Tweek", "none", 
+    "Sonix, KEN", "Peli", "Shuton, Dabuz, Myran", "none", "Zomba, Anathema, zackray", 
+    "none", "zackray, Jakal", "none", "Kameme", "none", 
+    "Dabuz", "none", "none", "none", "none", 
+    "none", "Nairo", "Tea", "none", "Kome",
+    "none", "none", "Asimo", "none", "Sparg0", 
+    "MkLeo", "Bloom4Eva", "Shirayuki", "none", "none", 
+    "none", "none", "none", "Skyjay", "Brood", 
+    "MkLeo, zackray", "none", "none", "Riddles", "MkLeo, Rizeasu", 
+    "ProtoBanham", "acola, Onin", "KEN", "MkLeo, Shuton, Cosmos", "Riddles",
+    "Kameme, zackray"
+  ), 6)
+```
+```{r, echo = FALSE}
+major_wins_and_seconds <- plot_ly(
+    data = major_wins,
+    x = ~total_wins,
+    y = ~seconds,
+    type = "scatter",
+    mode = 'markers',
+    size = 10,
+    color = ~tier,
+    colors = c("#d78d72", "#cfd669", "#e9efa5", "#a3d5bc", "#a0b4ef"),
+    frame = ~years,
+    text = ~paste("Name:", names,
+                  "<br>Company:", company,
+                  "<br>Tier:", tier,
+                  "<br>Total Major Wins:", total_wins,
+                  "<br>Total Major 2nds:", seconds,
+                  "<br>Notable Players:", players
+                  ),
+    hoverinfo = "text",
+    width = 900,
+    height = 750
+  )%>%animation_opts(frame = 1200,
+                 redraw = TRUE,
+                 easing = "linear"
+  )%>%layout(
+    title = list(
+      text = "Major Tournament Wins and Runner-ups over Time",
+      font = list(
+        family = "FOT-Matisse Pro UB",
+        size = 25,
+        color = "#2a0134"
+      )
+    ),
+    xaxis = list(
+      title = list(
+        text = "Major Wins",
+        font = list(
+          family = "FOT-Matisse Pro UB",
+          size = 18,
+        color = "#2a0134"
+        )
+      ),
+      tickfont = list(
+        family = "Verdana",
+        size = 10,
+        color = "#2a0134"
+      )
+    ),
+    yaxis = list(
+      title = list(
+        text = "Major Runner-ups",
+        font = list(
+          family = "FOT-Matisse Pro UB",
+          size = 15,
+        color = "#2a0134"
+        )
+      ),
+      tickfont = list(
+        family = "Verdana",
+        size = 10,
+        color = "#2a0134"
+      )
+    ),
+    hoverlabel = list(align = "left"),
+    paper_bgcolor = '#efdbff',
+    plot_bgcolor = '#f3ebff',
+    margin = list(l = 100,
+                  r = 100,
+                  b = 100,
+                  t = 100,
+                  pad = 4)
+    )
+```
+```{r, echo = FALSE}
+major_wins_and_seconds
+```
+
+Looking at just 1st and 2nd place finishes, the animation is dominated by S and A tier characters. Only five characters in B tiers or below have won first place at a major: Ike, Corrin, Bayonetta, King Dedede, and Pichu. Meanwhile, the other 129 majors were won by 41 A-tier characters and 88 S-tier characters. This further solidifies the idea that there is a great range of competitive viability between characters, and most B, C, and D-tier characters will likely never get to see success at the national or global level. However, the entire S and A tiers account for about half of the roster, which means that about one half of the characters are somewhat viable for tournament success. 
+
+It is important to note that most of the top-tier characters are associated with just one or two world-renown players, especially in current tournament play. It is very likely that the performances of these top-level competitors are what made their characters so high in the tier list. If top Smash Ultimate players were to try to learn top-tier characters other than the ones of which they are familiar, chances are that these players would no longer succeed in the competitive scene. This is very unlike the Meta Knight and Bayonetta cases, where players could easily pick up these characters and force the game's competitive scene to rely heavily on them.
+
+\
+
+### Part 5: Conclusion
+
+In casual play, there appears to be no correlation between success in the game and character choice. At this skill level, consistency with a handful of specific characters appears to have a much greater effect on win ratio than character tier. As for multiplayer battles, it may even be desirable to pick lower-tier characters, as many of them are specialized in dealing lots of damage in large areas.
+
+In competitive play, it appears that serious players should be making careful character selections, but competitive success is not dominated by just one or two characters. Over one third of the entire cast has won a major tournament, and over half has placed 2nd or higher in a major tournament. Additionally, the S+, S, and S- tiers are quite large, making up one quarter of the roster. When seeking to compete in Smash Ultimate, players may not simply pick any character out of the 88 available, but the choices are still plentiful.
+
+\
+
+My conclusion is that Super Smash Bros. Ultimate is very well-balanced game. On all levels of play, there is great freedom in choosing what characters to play, allowing the game to be more enjoyable and much less about winning for both brand-new players and seasoned veterans. 
+
+\
+\
+\

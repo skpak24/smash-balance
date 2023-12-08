@@ -1,0 +1,1535 @@
+---
+title: "Best_Plot"
+author: "Sam Pak"
+date: "2023-11-13"
+output: html_document
+---
+
+Packages
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+pacman::p_load(plotly, ggplot2, ggimage, 
+               dplyr, extrafont, 
+               treemapify, patchwork)
+```
+
+Base Data
+```{r}
+custom_colors <- c("#dd7d7a", "#e79d82", "#ffa689", "#ffe699", "#fcf4a1", "#f9ffb5", "#b3f5bc", "#c3f5dc", "#D6F6FF", "#BEE0FF", "#a0c4ff")
+
+# Create a data frame for Super Smash Bros. Ultimate characters
+smash_characters <- data.frame(
+  name = c(
+    "Mario", "Donkey Kong", "Link", "Samus", "Dark Samus", 
+    "Yoshi", "Kirby", "Fox", "Pikachu", "Luigi", 
+    "Ness", "Captain Falcon", "Jigglypuff", "Peach", "Daisy", 
+    "Bowser", "Ice Climbers", "Sheik", "Zelda", "Dr Mario",
+    "Pichu", "Falco", "Marth", "Lucina", "Young Link",
+    "Ganondorf", "Mewtwo", "Roy", "Chrom", "Mr Game & Watch",
+    "Meta Knight", "Pit", "Dark Pit", "Zero Suit Samus", "Wario", 
+    "Snake", "Ike", "Squirtle", "Ivysaur", "Charizard", "Diddy Kong", "Lucas", 
+    "Sonic", "King Dedede", "Olimar", "Lucario", "ROB", 
+    "Toon Link", "Wolf", "Villager", "Mega Man", "Wii Fit Trainer", 
+    "Rosalina & Luma", "Little Mac", "Greninja", "Mii Brawler", "Mii Swordfighter", 
+    "Mii Gunner", "Palutena", "Pac-Man", "Robin", "Shulk",
+    "Bowser Jr", "Duck Hunt", "Ryu", "Ken", "Cloud", 
+    "Corrin", "Bayonetta", "Inkling", "Ridley", "Simon", 
+    "Richter", "King K Rool", "Isabelle", "Incineroar", "Piranha Plant", 
+    "Joker", "Hero", "Banjo & Kazooie", "Terry", "Byleth", 
+    "Min Min", "Steve", "Sephiroth", "Pyra", "Mythra", "Kazuya",
+    "Sora"
+  ),
+  release = c(
+    1, 2, 3, 4, 68, 
+    5, 6, 7, 8, 9,
+    10, 11, 12, 13, 67,
+    14, 15, 16, 17, 18,
+    19, 20, 21, 60, 22, 
+    23, 24, 25, 69, 26, 
+    27, 28, 61, 29, 30, 
+    31, 32, 33, 34, 35, 36, 37, 
+    38, 39, 40, 41, 42, 
+    43, 44, 45, 46, 47,
+    48, 49, 50, 51, 52, 
+    53, 54, 55, 56, 57,
+    58, 59, 62, 75, 63,
+    64, 65, 66, 70, 71, 
+    72, 73, 74, 76, 77, 
+    78, 79, 80, 81, 82, 
+    83, 84, 85, 86, 87, 88, 
+    89
+  ),
+  company = c(
+    "Nintendo", "Nintendo", "Nintendo", "Nintendo", "Nintendo", 
+    "Nintendo", "Nintendo", "Nintendo", "Nintendo", "Nintendo", 
+    "Nintendo", "Nintendo", "Nintendo", "Nintendo", "Nintendo", 
+    "Nintendo", "Nintendo", "Nintendo", "Nintendo", "Nintendo", 
+    "Nintendo", "Nintendo", "Nintendo", "Nintendo", "Nintendo", 
+    "Nintendo", "Nintendo", "Nintendo", "Nintendo", "Nintendo", 
+    "Nintendo", "Nintendo", "Nintendo", "Nintendo", "Nintendo", 
+    "Konami", "Nintendo", "Nintendo", "Nintendo", "Nintendo", "Nintendo", "Nintendo", 
+    "Sega", "Nintendo", "Nintendo", "Nintendo", "Nintendo", 
+    "Nintendo", "Nintendo", "Nintendo", "Capcom", "Nintendo", 
+    "Nintendo", "Nintendo", "Nintendo", "Nintendo", "Nintendo", 
+    "Nintendo", "Nintendo", "Bandai Namco", "Nintendo", "Nintendo",
+    "Nintendo", "Nintendo", "Capcom", "Capcom", "Square Enix",
+    "Nintendo", "Sega", "Nintendo", "Nintendo", "Konami",
+    "Konami", "Nintendo", "Nintendo", "Nintendo", "Nintendo", 
+    "Sega", "Square Enix", "Microsoft", "SNK", "Nintendo", 
+    "Nintendo", "Microsoft", "Square Enix", "Nintendo", "Nintendo", "Bandai Namco",
+    "Square Enix"
+  ),
+  tier = c(
+    "A+", "C-", "B-", "A+", "A+", 
+    "A+", "D+", "S", "S-", "B+", 
+    "B+", "B+", "C+", "S", "S", 
+    "B-", "B-", "A-", "D+", "D+", 
+    "B-", "B+", "B-", "A+", "A-", 
+    "D-", "C+", "S", "B+", "S-", 
+    "B-", "B-", "B-", "A+", "A+", 
+    "S-", "C-", "A+", "A+", "A+", "S-", "C+", 
+    "S", "D+", "A-", "C-", "S", 
+    "B-", "S-", "C-", "A-", "C+", 
+    "B-", "D-", "A-", "A-", "D+", 
+    "C+", "S-", "S-", "C+", "S-",
+    "C-", "C-", "A-", "A-", "S-",
+    "B+", "B+", "B+", "C+", "C-",
+    "C-", "D+", "D+", "C+", "D+", 
+    "S+", "B+", "C-", "A-", "A-", 
+    "S-", "S+", "A+", "S+", "S+", "S",
+    "A-"
+  ),
+  tier_number = c(
+    8, 3, 5, 8, 8, 
+    8, 2, 10, 9, 6, 
+    6, 6, 4, 10, 10, 
+    5, 5, 7, 2, 2, 
+    5, 6, 5, 8, 7, 
+    1, 4, 10, 6, 9, 
+    5, 5, 5, 8, 8, 
+    9, 3, 8, 8, 8, 9, 4, 
+    10, 2, 7, 3, 10, 
+    5, 9, 3, 7, 4, 
+    5, 1, 7, 7, 2, 
+    4, 9, 9, 4, 9, 
+    3, 3, 7, 7, 9, 
+    6, 6, 6, 4, 3, 
+    3, 2, 2, 4, 2,
+    11, 6, 3, 7, 7, 
+    9, 11, 8, 11, 11, 10, 
+    7
+  ),
+  tier_number_adj = c(
+    0.08, 0.03, 0.05, 0.08, 0.08, 
+    0.08, 0.02, 0.10, 0.09, 0.06, 
+    0.06, 0.06, 0.04, 0.10, 0.10, 
+    0.05, 0.05, 0.07, 0.02, 0.02, 
+    0.05, 0.06, 0.05, 0.08, 0.07, 
+    0.01, 0.04, 0.10, 0.06, 0.09, 
+    0.05, 0.05, 0.05, 0.08, 0.08, 
+    0.09, 0.03, 0.08, 0.08, 0.08, 0.09, 0.04, 
+    0.10, 0.02, 0.07, 0.03, 0.10, 
+    0.05, 0.09, 0.03, 0.07, 0.04, 
+    0.05, 0.01, 0.07, 0.07, 0.02, 
+    0.04, 0.09, 0.09, 0.04, 0.09, 
+    0.03, 0.03, 0.07, 0.07, 0.09, 
+    0.06, 0.06, 0.06, 0.04, 0.03, 
+    0.03, 0.02, 0.02, 0.04, 0.02,
+    0.11, 0.06, 0.03, 0.07, 0.07, 
+    0.09, 0.11, 0.08, 0.11, 0.11, 0.10, 
+    0.07
+  ),
+  weight = c(
+    98, 133, 104, 108, 108, 
+    104, 79, 77, 79, 97,
+    94, 104, 68, 89, 89,
+    135, 92, 78, 85, 98,
+    62, 82, 90, 90, 88, 
+    118, 79, 95, 95, 75, 
+    80, 96, 96, 80, 107, 
+    106, 107, 75, 96, 116, 90, 94,
+    86, 127, 79, 92, 106, 
+    91, 92, 92, 102, 96, 
+    82, 87, 88, 94, 100, 
+    104, 91, 95, 95, 97, 
+    108, 86, 103, 103, 100, 
+    98, 81, 94, 107, 107, 
+    107, 133, 88, 116, 112, 
+    93, 101, 106, 108, 97, 
+    104, 92, 79, 98, 92, 113,
+    85
+  ),
+  run_speed = c(
+    1.76, 1.873, 1.534, 1.654, 1.654, 
+    2.046, 1.727, 2.402, 2.039, 1.65, 
+    1.609, 2.552, 1.271, 1.595, 1.595, 
+    1.971, 1.53, 2.42, 1.43, 1.464,
+    1.892, 1.619, 1.964, 1.964, 1.749, 
+    1.34, 2.255, 2.145, 2.145, 1.679, 
+    2.09, 1.828, 1.828, 2.31, 1.65, 
+    1.595, 1.507, 1.76, 1.595, 2.2, 2.006, 1.65,
+    3.85, 1.496, 1.617, 1.705, 1.725, 
+    1.906, 1.54, 1.397, 1.602, 1.866, 
+    1.795, 2.464, 2.288, 1.92, 1.58,
+    1.37, 2.077, 1.672, 1.265, 1.672, 
+    1.566, 1.793, 1.6, 1.76, 2.167, 
+    1.595, 1.76, 1.925, 2.2, 1.52, 
+    1.52, 1.485, 1.48, 1.18, 1.72, 
+    2.06, 1.84, 2.18, 1.72, 1.43,
+    1.55, 1.45, 1.86, 1.38, 2.41, 1.55,
+    1.58
+  ),
+  popularity_large = c(
+    2.45, 1.60, 3.17, 1.56, 0.32, 
+    1.56, 3.26, 0.58, 0.70, 1.66, 
+    2.50, 1.44, 1.08, 0.38, 0.13, 
+    2.33, 0.28, 0.40, 1.20, 0.43, 
+    0.13, 0.91, 0.52, 0.72, 1.03, 
+    1.64, 0.58, 1.04, 0.39, 0.35, 
+    0.21, 0.40, 0.53, 0.70, 0.29, 
+    1.24, 0.95, 0.78, 0.78, 0.78, 0.28, 1.31, 
+    1.49, 0.99, 0.28, 0.37, 1.22, 
+    0.85, 0.61, 0.22, 0.42, 0.27, 
+    0.42, 2.96, 0.47, 0.64, 0.40, 
+    0.67, 0.78, 0.53, 0.62, 0.39,
+    1.17, 0.18, 0.37, 0.57, 3.98,
+    0.46, 0.58, 1.66, 1.08, 0.26,
+    0.21, 3.14, 0.74, 1.51, 2.06, 
+    2.83, 2.04, 2.25, 2.05, 2.16, 
+    0.58, 1.72, 2.41, 4.26, 4.26, 1.82,
+    4.33
+  )
+)
+
+smash_characters$path <-
+  paste0("/Users/spak/Downloads/School/F23/STAT3280/stockIcons/",
+         smash_characters$name, ".png")
+
+smash_characters$tier_level<-ifelse(
+  grepl("S", smash_characters$tier), "S", ifelse(
+    grepl("A", smash_characters$tier), "A", ifelse(
+      grepl("B", smash_characters$tier), "B", ifelse(
+        grepl("C", smash_characters$tier), "C", "D"
+  ))))
+
+smash_characters$tier_number_simp<-ifelse(
+  smash_characters$tier_level=="S", 0.065, ifelse(
+    smash_characters$tier_level=="A", 0.050, ifelse(
+      smash_characters$tier_level=="B", 0.045, ifelse(
+        smash_characters$tier_level=="C", 0.040, 0.035
+  ))))
+
+smash_characters$tier <- factor(smash_characters$tier, levels = c("D-", "D+", "C-", "C+", "B-", "B+", "A-", "A+", "S-", "S", "S+"))
+
+
+```
+
+
+PART 1: General Character Information
+
+Plot 1. Tier over Release Order (Large)
+```{r}
+#tier by release order
+
+p2<-ggplot(smash_characters, aes(x = release, y = tier))+
+  geom_rect(data=NULL, aes(xmin=-Inf, xmax=12.5, ymin=-Inf, ymax=Inf), fill="#FFCD91", alpha=0.1)+
+  geom_rect(data=NULL, aes(xmin=12.5, xmax=26.5, ymin=-Inf, ymax=Inf), fill="#FEBF6E", alpha=0.08)+
+  geom_rect(data=NULL, aes(xmin=26.5, xmax=44.5, ymin=-Inf, ymax=Inf), fill="#FEA95E", alpha=0.08)+
+  geom_rect(data=NULL, aes(xmin=44.5, xmax=66.5, ymin=-Inf, ymax=Inf), fill="#FE994A", alpha=0.08)+
+  geom_rect(data=NULL, aes(xmin=66.5, xmax=Inf, ymin=-Inf, ymax=Inf), fill="#FE863F", alpha=0.05)+
+  annotate("text", x = 0, y = "D-", label = "SMASH 64", size = 10, family = "Impact", hjust = 0.25, alpha = 0.25)+
+  annotate("text", x = 13.5, y = "D-", label = "MELEE", size = 10, family = "Impact", hjust = 0, alpha = 0.25)+
+  annotate("text", x = 27.5, y = "D-", label = "BRAWL", size = 10, family = "Impact", hjust = 0, alpha = 0.25)+
+  annotate("text", x = 65, y = "D-", label = "SMASH 4", size = 10, family = "Impact", hjust = 1, alpha = 0.25)+
+  annotate("text", x = 82, y = "D-", label = "ULTIMATE", size = 10, family = "Impact", hjust = 0.1, alpha = 0.25)+
+  geom_segment(aes(x = 76, y = 6.6, xend = 76, yend = 11.4), color = "black", linetype = "dashed") +
+  geom_segment(aes(x = 76, y = 6.6, xend = 91, yend = 6.6), color = "black", linetype = "dashed") +
+  geom_segment(aes(x = 91, y = 6.6, xend = 91, yend = 11.4), color = "black", linetype = "dashed") +
+  geom_segment(aes(x = 76, y = 11.4, xend = 91, yend = 11.4), color = "black", linetype = "dashed") +
+  geom_segment(aes(x = 88, y = 6.6, xend = 88, yend = 5.6), color = "black", linetype = "dashed") +
+  annotate("text", x = 83, y = "B-", label = "Consistently high/top- \n  tier characters", size = 5, family = "Arial Narrow", hjust = 0.25, alpha = 0.8)+
+  geom_image(aes(image = path),
+      data = smash_characters,
+      hjust = 0
+  )+
+  scale_x_continuous(breaks = c(1, 89), labels = c("First", "Last"))+
+    labs(
+    title = "Character Rankings in \nRelease Order",
+    subtitle="Is There a Relationship Between Character Tier and Release Time?",
+    x = "Release Order",
+    y = "Tier")+
+  theme(
+    plot.title = element_text(face="bold", size=35, colour="#47193b", hjust=0.5, family="FOT-Matisse Pro UB", margin = margin(t = 15)), 
+    plot.subtitle = element_text(size=10, colour="#47193b", hjust=0.5, family="FOT-Matisse Pro UB", margin = margin(t = 6, b = 7)),
+    axis.title.x=element_text(size=20, color="black", family="FOT-Matisse Pro UB", margin = margin(t = 7, b = 15)),
+    axis.title.y=element_text(size=18, color="black", family="FOT-Matisse Pro UB", margin = margin(r = 12, l = 10)),
+    axis.text.x=element_text(face="bold", size=15, colour="black", family="Arial Narrow"),
+    axis.text.y=element_text(size=15, colour="black", family="Impact", hjust = 0),
+    axis.ticks.y = element_blank()
+  )+theme(
+    plot.background=element_rect(fill="#FFDDA1"),
+    plot.margin = margin(0.5, 1, 0, 0.5, "cm"),
+    panel.grid.major = element_line(color = "black"), # Major Grid Lines
+    panel.grid.minor = element_blank(), # Minor Grid Lines gone
+    panel.border = element_rect(colour = "black", fill=NA, size=0.7) # Border
+)
+p2
+#ggsave("smash_tier_order.png", plot = p2, width = 12, height = 8, units = "in", dpi = 300)
+```
+Plot 2. Weight over Speed (Large)
+```{r}
+#Weight and Speed plot
+weight_speed<-ggplot(smash_characters, aes(x = run_speed, y = weight)) +
+  geom_rect(data=NULL, aes(xmin=-Inf, xmax=Inf, ymin=-Inf, ymax=70), fill="#F8BAC5", alpha=0.1)+
+  geom_rect(data=NULL, aes(xmin=-Inf, xmax=Inf, ymin=70, ymax=85), fill="#F198AA", alpha=0.08)+
+  geom_rect(data=NULL, aes(xmin=-Inf, xmax=Inf, ymin=85, ymax=100), fill="#E8738F", alpha=0.08)+
+  geom_rect(data=NULL, aes(xmin=-Inf, xmax=Inf, ymin=100, ymax=115), fill="#DD4B75", alpha=0.08)+
+  geom_rect(data=NULL, aes(xmin=-Inf, xmax=Inf, ymin=115, ymax=Inf), fill="#CF005D", alpha=0.05)+
+  annotate("text", x = 4, y = 122.0, label = "Super Heavyweight", size = 17, family = "Impact", hjust = 1, alpha = 0.15)+
+  annotate("text", x = 4, y = 107.0, label = "Heavyweight", size = 17, family = "Impact", hjust = 1, alpha = 0.14)+
+  annotate("text", x = 4, y = 92.0, label = "Middleweight", size = 17, family = "Impact", hjust = 1, alpha = 0.13)+
+  annotate("text", x = 4, y = 77.0, label = "Lightweight", size = 17, family = "Impact", hjust = 1, alpha = 0.12)+
+  annotate("text", x = 4, y = 62.0, label = "Featherweight", size = 17, family = "Impact", hjust = 1, alpha = 0.11)+
+  geom_image(aes(image = path),
+      #size = 0.055, 
+      #size = smash_characters$tier_number_adj,
+      size = smash_characters$tier_number_simp,
+      data = smash_characters,
+      hjust = 0
+  )+
+  #scale_size_continuous(
+    #range = c(0, 0.1))+
+  labs(
+    title = "Character Weight over Speed",
+    subtitle="Comparison of Weight and Speed Values for All Super Smash Bros. Ultimate Characters",
+    x = "Max Running Speed (Units per Frame)",
+    y = "Weight (In-Game Units)")+
+  xlim(c(1, 4))+
+  ylim(c(60, 140))+ 
+  theme(
+    plot.title = element_text(face="bold", size=40, colour="#47193b", hjust=0.5, family="FOT-Matisse Pro UB", margin = margin(t = 15)), 
+    plot.subtitle = element_text(size=10, colour="#47193b", hjust=0.5, family="FOT-Matisse Pro UB", margin = margin(t = 6, b = 7)),
+    axis.title.x=element_text(size=20, color="#1a237e", family="FOT-Matisse Pro UB", margin = margin(t = 7, b = 15)),
+    axis.title.y=element_text(size=18, color="#1a237e", family="FOT-Matisse Pro UB", margin = margin(r = 12, l = 10)),
+    axis.text.x=element_text(face="bold", size=15, colour="#1a237e", family="Impact"),
+    axis.text.y=element_text(face="bold", size=15, colour="#1a237e", family="Impact") 
+  )+theme(
+    plot.background=element_rect(fill="#F8CAD5"),
+    plot.margin = margin(0.5, 1, 0, 0.5, "cm"),
+    panel.grid.major = element_line(color = "black"), # Major Grid Lines
+    panel.grid.minor = element_blank(), # Minor Grid Lines gone
+    panel.border = element_rect(colour = "#1a237e", fill=NA, size=0.7) # Border
+)+
+  annotate("segment", x = 3.66, xend = 3.78, y = 84, yend = 85, colour = "#1a237e", size=1, alpha=0.8)+
+    annotate("text", x = 3.645, y = 84, label = "Sonic", size = 5, family = "Arial Narrow", colour = "#1a237e", hjust = 1, alpha = 0.9)+
+  annotate("segment", x = 1.2, xend = 1.24, y = 63.2, yend = 65.7, colour = "#1a237e", size=1, alpha=0.8)+
+    annotate("text", x = 1.2, y = 61.4, label = "Jigglypuff", size = 5, family = "Arial Narrow", colour = "#1a237e", hjust = 1, alpha = 0.9)+
+  annotate("segment", x = 2.03, xend = 2.12, y = 136, yend = 138, colour = "#1a237e", size=1, alpha=0.8)+
+    annotate("text", x = 2.14, y = 139, label = "Bowser", size = 5, family = "Arial Narrow", colour = "#1a237e", hjust = 0, alpha = 0.9)+
+  annotate("segment", x = 1.14, xend = 1.16, y = 110.8, yend = 113.7, colour = "#1a237e", size=1, alpha=0.8)+
+    annotate("text", x = 1.05, y = 109.3, label = "Incineroar", size = 5, family = "Arial Narrow", colour = "#1a237e", hjust = 0.5, alpha = 0.9)+
+  annotate("segment", x = 1.98, xend = 2.1, y = 62.9, yend = 63.8, colour = "#1a237e", size=1, alpha=0.8)+
+    annotate("text", x = 2.12, y = 64.45, label = "Pichu", size = 5, family = "Arial Narrow", colour = "#1a237e", hjust = 0, alpha = 0.9)+
+  annotate("text", x = 3.55, y = 140, label = "*Larger icon size corresponds to higher character ranking", size = 4, family = "Arial Narrow", colour = "#1a237e", hjust = 0.5, alpha = 0.9)
+
+weight_speed
+#ggsave("smash_weight_speed.png", plot = weight_speed, width = 12, height = 8, units = "in", dpi = 300)
+``` 
+
+
+
+PART 2: Character Popularity
+
+Plot 3. Character Popularity (Large)
+```{r}
+custom_colors_company <- c("#ffe699", "#f9ffb5", "#dd6d7a", "#b3f5bc", "#f19a9d", "#a0c4ff", "#D6F6FF", "#ffc6ff")
+
+char_pop<-ggplot(smash_characters, aes(area = popularity_large, fill = company, label=name, subgroup=tier, subgroup2=company)) +
+  geom_treemap()+
+  geom_treemap_subgroup_border(color="black", size = 4.5) +
+  geom_treemap_subgroup2_border(colour = "black", size = 1) +
+  geom_treemap_subgroup_text(place = "centre", grow = F, alpha = 0.2, color="black", min.size = 0) +
+  geom_treemap_text(color = "black", place = "centre", grow = F)+
+  scale_fill_manual(values = custom_colors_company)+
+  labs(
+      title = "Character Popularity",
+      subtitle="Is Character Popularity and Tier Correlated?",
+      fill="Company")+
+  theme(
+      plot.background=element_rect(fill="#ea8179"),
+      plot.margin = margin(1.5, 2, 2, 2, "cm"),
+      plot.title = element_text(face="bold", size=35, colour="black", hjust=0.7, family="FOT-Matisse Pro UB"),
+      plot.subtitle = element_text(size=12, colour="black", hjust=0.7, family="FOT-Matisse Pro UB", margin = margin(t = 6, b = 10)),
+      legend.text=element_text(size=10, family="FOT-Matisse Pro UB", colour="black"),
+      legend.title=element_text(size=18, family="FOT-Matisse Pro UB", colour="black"),
+      legend.background=element_rect(fill="#f7bdbd",linewidth=1,linetype="solid",colour="black"),
+      axis.text = ggplot2::element_text(size = 50)  )
+
+char_pop
+#ggsave("smash_tier_treemap.png", plot = char_pop, width = 12, height = 10, units = "in", dpi = 300)
+```
+
+Pre-Plot 4. Make Separate Data Frames for Sam, Austin, Jialin
+```{r}
+s1 <- data.frame(
+  name = c(
+    "Mario", "Donkey\nKong", "Link", "Samus", "Dark Samus", 
+    "Yoshi", "Kirby", "Fox", "Pikachu", "Luigi", 
+    "Ness", "Capt.\nFalcon", "Jigglypuff", "Peach", "Daisy", 
+    "Bowser", "Ice Climbers", "Sheik", "Zelda", "Dr. Mario",
+    "Pichu", "Falco", "Marth", "Lucina", "Young Link",
+    "Ganondorf", "Mewtwo", "Roy", "Chrom", "Mr. Game\n& Watch",
+    "Meta Knight", "Pit", "Dark Pit", "Zero\nSuit\nSamus", "Wario", 
+    "Snake", "Ike", "Pokemon\nTrainer", "Diddy\nKong", "Lucas", 
+    "Sonic", "King\nDedede", "Olimar", "Lucario", "R.O.B.", 
+    "Toon Link", "Wolf", "Villager", "Mega Man", "Wii Fit Trainer", 
+    "Rosalina & Luma", "Little\nMac", "Greninja", "Mii Brawler", "Mii Swordfighter", 
+    "Mii Gunner", "Palutena", "Pac-Man", "Robin", "Shulk",
+    "Bowser Jr", "Duck Hunt", "Ryu", "Ken", "Cloud", 
+    "Corrin", "Bayonetta", "Inkling", "Ridley", "Simon", 
+    "Richter", "King\nK. Rool", "Isabelle", "Incineroar", "Piranha\nPlant", 
+    "Joker", "Hero", "Banjo & Kazooie", "Terry", "Byleth", 
+    "Min Min", "Steve", "Sephiroth", "Pyra/\nMythra", "Kazuya",
+    "Sora"
+  ),
+  tier = c(
+    "A+", "C-", "B-", "A+", "A+", 
+    "A+", "D+", "S", "S-", "B+", 
+    "B+", "B+", "C+", "S", "S", 
+    "B-", "B-", "A-", "D+", "D+", 
+    "B-", "B+", "B-", "A+", "A-", 
+    "D-", "C+", "S", "B+", "S-", 
+    "B-", "B-", "B-", "A+", "A+", 
+    "S-", "C-", "A+", "S-", "C+", 
+    "S", "D+", "A-", "C-", "S", 
+    "B-", "S-", "C-", "A-", "C+", 
+    "B-", "D-", "A-", "A-", "D+", 
+    "C+", "S-", "S-", "C+", "S-",
+    "C-", "C-", "A-", "A-", "S-",
+    "B+", "B+", "B+", "C+", "C-",
+    "C-", "D+", "D+", "C+", "D+", 
+    "S+", "B+", "C-", "A-", "A-", 
+    "S-", "S+", "A+", "S+", "S",
+    "A-"
+  )
+)
+
+s1$tier <- factor(s1$tier, levels = c("D-", "D+", "C-", "C+", "B-", "B+", "A-", "A+", "S-", "S", "S+"))
+
+
+sam<-s1
+sam$battles = c(
+    1133, 2379, 51, 34, 46, 
+    57, 651, 46, 46, 127, 
+    123, 1443, 883, 43, 35, 
+    55, 37, 36, 40, 75, 
+    1542, 67, 105, 148, 23, 
+    1530, 149, 237, 84, 45, 
+    44, 24, 45, 25, 30, 
+    35, 75, 74, 74, 31, 
+    22, 46, 39, 32, 32, 
+    24, 43, 31, 21, 30, 
+    19, 47, 29, 125, 2, 
+    23, 14, 31, 23, 18,
+    31, 22, 29, 32, 36,
+    76, 20, 28, 36, 11,
+    19, 96, 50, 58, 435, 
+    25, 34, 22, 74, 180, 
+    21, 476, 14, 177, 41,
+    11
+  )
+sam<-sam[order(sam$battles, decreasing = TRUE),]
+sam$battles_percent<-round(sam$battles/sum(sam$battles)*100, 2)
+sam<-sam[1:15,]
+
+austin<-s1
+austin$battles = c(
+    123, 27, 62, 63, 15, 
+    14, 13, 493, 17, 41, 
+    112, 220, 17, 28, 22, 
+    41, 12, 213, 25, 67, 
+    10, 276, 101, 101, 14, 
+    76, 20, 27, 16, 158, 
+    27, 22, 19, 155, 17, 
+    164, 39, 265, 175, 27, 
+    31, 142, 31, 16, 93, 
+    31, 195, 121, 43, 18, 
+    23, 18, 39, 55, 1, 
+    0, 28, 89, 30, 31,
+    97, 31, 139, 205, 33,
+    18, 69, 26, 23, 19,
+    37, 106, 34, 58, 13, 
+    35, 36, 19, 184, 50, 
+    21, 36, 76, 42, 496,
+    13
+  )
+austin<-austin[order(austin$battles, decreasing = TRUE),]
+austin$battles_percent<-round(austin$battles/sum(austin$battles)*100, 2)
+austin<-austin[1:15,]
+
+jialin<-s1
+jialin$battles = c(
+    6, 10, 10, 48, 7, 
+    8, 6, 4, 502, 10, 
+    5, 5, 6, 5, 7, 
+    705, 5, 8, 9, 4, 
+    6, 3, 21, 20, 5, 
+    64, 15, 99, 21, 7, 
+    14, 25, 13, 7, 8, 
+    4, 25, 9, 8, 5, 
+    38, 7, 4, 36, 22, 
+    5, 9, 9, 13, 5, 
+    9, 195, 22, 4, 25, 
+    1, 200, 1, 8, 16,
+    13, 4, 16, 16, 21,
+    60, 15, 2, 21, 8,
+    6, 11, 7, 894, 10, 
+    120, 6, 1, 15, 361, 
+    13, 8, 45, 572, 44,
+    82
+  )
+jialin<-jialin[order(jialin$battles, decreasing = TRUE),]
+jialin$battles_percent<-round(jialin$battles/sum(jialin$battles)*100, 2)
+jialin<-jialin[1:15,]
+```
+Plot 4. Character Popularity (Small Scale, 3 Players)
+```{r}
+p4_sam1<-ggplot(sam, aes(x = reorder(name, -battles_percent), y = battles_percent, fill=tier))+
+  geom_bar(color = "black", stat = 'identity', size=0.3)+
+  geom_text(aes(label = paste0(battles_percent, "%")), vjust = -0.5, family="Verdana")+
+  scale_fill_manual(values = custom_colors, drop = FALSE)+
+  scale_y_continuous(expand = c(0, 0), limits = c(0, 18))+
+  labs(
+      title = "Most Used Characters by Player",
+      subtitle = "Sam",
+      fill = "Tier")+
+  theme(
+      plot.title = element_text(face="bold", size=35, colour="black", hjust=0.5, family="FOT-Matisse Pro UB"),
+      plot.subtitle = element_text(face="bold", size=20, colour="black", hjust=0.5, family="FOT-Matisse Pro UB"),
+      plot.background=element_rect(fill="#ffeaff"),
+      plot.margin = margin(1.5, 0, 0, 0, "cm"),
+      panel.background = element_rect(fill = "#fff2ff", color = "#fff2ff"),
+      panel.grid.major = element_line(linewidth = 0.3, linetype = 'solid', color = "black"),
+      panel.grid.major.x = element_blank(),
+      panel.grid.minor = element_blank(),
+      panel.border = element_rect(color = "black", fill = NA, size=0.8),
+      axis.title.x=element_blank(),
+      axis.title.y=element_blank(),
+      axis.text.x=element_text(size=9, colour="black", family="Verdana"),
+      axis.text.y=element_text(size=10, colour="black", family="Verdana"),
+      legend.position = "none"
+      )
+
+p4_austin1<-ggplot(austin, aes(x = reorder(name, -battles_percent), y = battles_percent, fill=tier))+
+  geom_bar(color = "black", stat = 'identity', size=0.3)+
+  geom_text(aes(label = paste0(battles_percent, "%")), vjust = -0.5, family="Verdana")+
+  scale_fill_manual(values = custom_colors, drop = FALSE)+
+  scale_y_continuous(expand = c(0, 0), limits = c(0, 9))+
+  labs(
+      title = "Austin",
+      y = "Percentage of Battles",
+      fill = "Tier")+
+  theme(
+      plot.title = element_text(face="bold", size=20, colour="black", hjust=0.5, family="FOT-Matisse Pro UB"),
+      plot.background=element_rect(fill="#ffeaff"),
+      plot.margin = margin(0, 1, 0, 1, "cm"),
+      panel.background = element_rect(fill = "#fff2ff", color = "#fff2ff"),
+      panel.grid.major = element_line(linewidth = 0.3, linetype = 'solid', color = "black"),
+      panel.grid.major.x = element_blank(),
+      panel.grid.minor = element_blank(),
+      panel.border = element_rect(color = "black", fill = NA, size=0.8),
+      axis.title.x=element_blank(),
+      axis.title.y=element_text(size=20, color="black", family="FOT-Matisse Pro UB", margin = margin(r = 10)),
+      axis.text.x=element_text(size=9, colour="black", family="Verdana"),
+      axis.text.y=element_text(size=10, colour="black", family="Verdana"),
+      legend.text=element_text(size=10, family="FOT-Matisse Pro UB", colour="black"),
+      legend.title=element_text(size=18, family="FOT-Matisse Pro UB", colour="black"),
+      legend.background=element_rect(fill="#fff2ff",linewidth=0.4,linetype="solid",colour="black")
+      )+
+  guides(fill = guide_legend(reverse = TRUE))
+
+p4_jialin1<-ggplot(jialin, aes(x = reorder(name, -battles_percent), y = battles_percent, fill=tier))+
+  geom_bar(color = "black", stat = 'identity', size=0.3)+
+  geom_text(aes(label = paste0(battles_percent, "%")), vjust = -0.5, family="Verdana")+
+  scale_fill_manual(values = custom_colors, drop = FALSE)+
+  scale_y_continuous(expand = c(0, 0), limits = c(0, 21))+
+  labs(
+      title = "Jialin",
+      x = "Character",
+      fill = "Tier")+
+  theme(
+      plot.title = element_text(face="bold", size=20, colour="black", hjust=0.5, family="FOT-Matisse Pro UB"),
+      plot.background=element_rect(fill="#ffeaff"),
+      plot.margin = margin(0, 0, 1, 0, "cm"),
+      panel.background = element_rect(fill = "#fff2ff", color = "#fff2ff"),
+      panel.grid.major = element_line(linewidth = 0.3, linetype = 'solid', color = "black"),
+      panel.grid.major.x = element_blank(),
+      panel.grid.minor = element_blank(),
+      panel.border = element_rect(color = "black", fill = NA, size=0.8),
+      axis.title.x=element_text(size=16, color="black", family="Verdana", margin = margin(t = 7, b = 15)),
+      axis.title.y=element_blank(),
+      axis.text.x=element_text(size=9, colour="black", family="Verdana"),
+      axis.text.y=element_text(size=10, colour="black", family="Verdana"),
+      legend.position = "none"
+      )
+
+
+p4_sam1/p4_austin1/p4_jialin1
+#ggsave("smash_p4_combined.png", plot = p4_sam1/p4_austin1/p4_jialin1, width = 12, height = 12, units = "in", dpi = 300)
+```
+
+
+
+PART 3: Casual Character Viability
+
+Pre-Plot 5. Win Ratios
+```{r}
+sam_win<-s1
+sam_win$win_ratio_over50 = c(
+    .68, .96, .50, NA, NA, 
+    .68, .70, NA, NA, .54, 
+    .82, .78, .48, NA, NA, 
+    .54, NA, NA, NA, .74,
+    .68, .64, .60, .76, NA,
+    .70, .62, .56, .70, NA,
+    NA, NA, NA, .52, NA, 
+    NA, .84, .56, .66, NA, 
+    NA, NA, NA, NA, NA, 
+    NA, NA, NA, NA, NA, 
+    NA, NA, NA, .36, NA, 
+    NA, NA, NA, NA, NA,
+    NA, NA, NA, NA, NA, 
+    .54, .50, NA, NA, NA, 
+    NA, .70, .52, .62, .72, 
+    NA, NA, NA, .66, .62, 
+    NA, .76, NA, .40, NA,
+    NA
+  )
+sam_win<-sam_win[order(sam_win$win_ratio_over50, decreasing = TRUE),]
+sam_win<-sam_win[1:15,]
+
+austin_win<-s1
+austin_win$win_ratio_over50 = c(
+    .46, NA, .38, .44, NA, 
+    NA, NA, .56, NA, NA, 
+    .38, .34, NA, NA, NA, 
+    NA, NA, .44, NA, .36,
+    NA, .34, .26, .52, NA,
+    .36, NA, NA, NA, .32,
+    NA, NA, NA, .18, .32, 
+    .46, NA, .50, .42, NA, 
+    NA, .36, NA, NA, .22, 
+    NA, .44, .50, NA, NA, 
+    NA, NA, NA, .38, NA, 
+    NA, NA, .48, NA, NA,
+    .28, NA, .26, .24, NA, 
+    NA, .18, NA, NA, NA, 
+    NA, .70, NA, .36, NA, 
+    NA, NA, NA, .38, .28, 
+    NA, NA, .16, NA, .50,
+    NA
+  )
+austin_win<-austin_win[order(austin_win$win_ratio_over50, decreasing = TRUE),]
+austin_win<-austin_win[1:15,]
+
+jialin_win<-s1
+jialin_win$win_ratio_over50 = c(
+    NA, NA, NA, .16, NA, 
+    NA, NA, NA, .20, NA, 
+    NA, NA, NA, NA, NA,  
+    .48, NA, NA, NA, NA,  
+    NA, NA, NA, NA, NA,  
+    .24, NA, .18, NA, NA,  
+    NA, NA, NA, NA, NA,  
+    NA, NA, NA, NA, NA, 
+    NA, NA, NA, NA, NA, 
+    NA, NA, NA, NA, NA, 
+    NA, .22, NA, NA, NA, 
+    NA, .26, NA, NA, NA,
+    NA, NA, NA, NA, NA, 
+    .24, NA, NA, NA, NA, 
+    NA, NA, NA, .36, NA, 
+    .22, NA, NA, NA, .30, 
+    NA, NA, .22, .18, .34,
+    .36
+  )
+jialin_win<-jialin_win[order(jialin_win$win_ratio_over50, decreasing = TRUE),]
+jialin_win<-jialin_win[1:15,]
+```
+Plot 5. Win Ratios (Small)
+```{r}
+p5_sam<-ggplot(sam_win, aes(x = reorder(name, -win_ratio_over50), y = win_ratio_over50, fill=tier))+
+  geom_bar(color = "black", stat = 'identity', size=0.3)+
+  geom_text(aes(label = win_ratio_over50), vjust = -0.5, family="Verdana")+
+  annotate("text", x = 11.0, y = 1.05, label = "*Only characters that have been played 50+ times are shown.", hjust = 0.35, vjust = 0, size = 4)+
+  scale_fill_manual(values = custom_colors, drop = FALSE)+
+  scale_y_continuous(expand = c(0, 0), limits = c(0, 1.15))+
+  labs(
+      title = "Most Frequently Winning Characters by Player",
+      subtitle = "Sam",
+      fill = "Tier")+
+  theme(
+      plot.title = element_text(face="bold", size=30, colour="#052903", hjust=0.5, family="FOT-Matisse Pro UB"),
+      plot.subtitle = element_text(face="bold", size=20, colour="#052903", hjust=0.5, family="FOT-Matisse Pro UB"),
+      plot.background=element_rect(fill="#78B97b"),
+      plot.margin = margin(1.5, 0, 0, 0, "cm"),
+      panel.background = element_rect(fill = "#9CD4A4", color = "#9CD4A4"),
+      panel.grid.major = element_line(linewidth = 0.3, linetype = 'solid', color = "#052903"),
+      panel.grid.major.x = element_blank(),
+      panel.grid.minor = element_blank(),
+      panel.border = element_rect(color = "#052903", fill = NA, size=0.8),
+      axis.title.x=element_blank(),
+      axis.title.y=element_blank(),
+      axis.text.x=element_text(size=9, colour="#052903", family="Verdana"),
+      axis.text.y=element_text(size=10, colour="#052903", family="Verdana"),
+      legend.position = "none"
+      )+
+  guides(fill = guide_legend(reverse = TRUE))
+
+p5_austin<-ggplot(austin_win, aes(x = reorder(name, -win_ratio_over50), y = win_ratio_over50, fill=tier))+
+  geom_bar(color = "black", stat = 'identity', size=0.3)+
+  geom_text(aes(label = win_ratio_over50), vjust = -0.5, family="Verdana")+
+  scale_fill_manual(values = custom_colors, drop = FALSE)+
+  scale_y_continuous(expand = c(0, 0), limits = c(0, 0.83))+
+  labs(
+      title = "Austin",
+      y = "Win Ratio",
+      fill = "Tier")+
+  theme(
+      plot.title = element_text(face="bold", size=20, colour="#052903", hjust=0.5, family="FOT-Matisse Pro UB"),
+      plot.background=element_rect(fill="#78B97b"),
+      plot.margin = margin(0, 1, 0, 1, "cm"),
+      panel.background = element_rect(fill = "#9CD4A4", color = "#9CD4A4"),
+      panel.grid.major = element_line(linewidth = 0.3, linetype = 'solid', color = "#052903"),
+      panel.grid.major.x = element_blank(),
+      panel.grid.minor = element_blank(),
+      panel.border = element_rect(color = "#052903", fill = NA, size=0.8),
+      axis.title.x=element_blank(),
+      axis.title.y=element_text(size=20, color="#052903", family="FOT-Matisse Pro UB", margin = margin(r = 10)),
+      axis.text.x=element_text(size=9, colour="#052903", family="Verdana"),
+      axis.text.y=element_text(size=10, colour="#052903", family="Verdana"),
+      legend.text=element_text(size=10, family="FOT-Matisse Pro UB", colour="#052903"),
+      legend.title=element_text(size=18, family="FOT-Matisse Pro UB", colour="#052903"),
+      legend.background=element_rect(fill="#9CD4A4",linewidth=0.4,linetype="solid",colour="#052903")
+      )+
+  guides(fill = guide_legend(reverse = TRUE))
+
+p5_jialin<-ggplot(jialin_win, aes(x = reorder(name, -win_ratio_over50), y = win_ratio_over50, fill=tier))+
+  geom_bar(color = "black", stat = 'identity', size=0.3)+
+  geom_text(aes(label = win_ratio_over50), vjust = -0.5, family="Verdana")+
+  scale_fill_manual(values = custom_colors, drop = FALSE)+
+  scale_y_continuous(expand = c(0, 0), limits = c(0, 0.63))+
+  labs(
+      title = "Jialin",
+      x = "Character",
+      fill = "Tier")+
+  theme(
+      plot.title = element_text(face="bold", size=20, colour="#052903", hjust=0.5, family="FOT-Matisse Pro UB"),
+      plot.background=element_rect(fill="#78B97b"),
+      plot.margin = margin(0, 0, 1, 0, "cm"),
+      panel.background = element_rect(fill = "#9CD4A4", color = "#9CD4A4"),
+      panel.grid.major = element_line(linewidth = 0.3, linetype = 'solid', color = "#052903"),
+      panel.grid.major.x = element_blank(),
+      panel.grid.minor = element_blank(),
+      panel.border = element_rect(color = "#052903", fill = NA, size=0.8),
+      axis.title.x=element_text(size=16, color="#052903", family="Verdana", margin = margin(t = 7, b = 15)),
+      axis.title.y=element_blank(),
+      axis.text.x=element_text(size=9, colour="#052903", family="Verdana"),
+      axis.text.y=element_text(size=10, colour="#052903", family="Verdana"),
+      legend.position = "none"
+      )+
+  guides(fill = guide_legend(reverse = TRUE))
+
+p5_sam/p5_austin/p5_jialin
+#ggsave("smash_p5_combined.png", plot = p5_sam/p5_austin/p5_jialin, width = 12, height = 12, units = "in", dpi = 300)
+
+```
+
+Plot 6. Win Ratios 2 (Small)
+```{r}
+all_users<-s1
+all_users$win_ratio = c(
+    62, 96, 40, 32, 44, 
+    36, 46, 56, 14, 40, 
+    30, 78, 52, 40, 38, 
+    12, 30, 44, 56, 58,
+    62, 30, 32, 38, 24,
+    66, 32, 26, 42, 30,
+    30, 40, 30, 18, 34, 
+    42, 34, 48, 42, 38, 
+    14, 22, 34, 26, 24, 
+    28, 44, 38, 42, 50, 
+    24, 34, 36, 34, 34, 
+    NA, 24, 46, 50, 18,
+    26, 34, 20, 24, 24, 
+    24, 32, 36, 26, 18, 
+    16, 70, 56, 32, 46, 
+    24, 34, 44, 26, 42, 
+    48, 78, 24, 8, 28,
+    38
+  )
+
+all_users<-all_users[order(all_users$win_ratio, decreasing = TRUE),]
+all_users$win_ratio_percent<-all_users$win_ratio/100
+all_users_top<-all_users[1:10,]
+all_users_bottom<-all_users[75:85,]
+
+p_top<-ggplot(all_users_top, aes(x = reorder(name, -win_ratio_percent), y = win_ratio_percent, fill=tier))+
+  geom_bar(color = "black", stat = 'identity', size=0.3)+
+  geom_text(aes(label = win_ratio_percent), vjust = -0.5, family="Verdana")+
+  scale_fill_manual(values = custom_colors, drop = FALSE)+
+  scale_y_continuous(expand = c(0, 0), limits = c(0, 1.05))+
+  labs(
+      title = "Characters with the\nHighest Win Ratios",
+      subtitle = "According to Personal Battle Data",
+      x = "Character",
+      y = "Win Ratio",
+      fill = "Tier")+
+  theme(
+      plot.title = element_text(face="bold", size=25, colour="black", hjust=0.5, family="FOT-Matisse Pro UB"),
+      plot.subtitle = element_text(face="bold", size=10, colour="black", hjust=0.5, family="FOT-Matisse Pro UB"),
+      plot.background=element_rect(fill="#fff77f"),
+      plot.margin = margin(1.0, 0.3, 1.0, 1.0, "cm"),
+      panel.background = element_rect(fill = "#ffff9f", color = "#ffff9f"),
+      panel.grid.major = element_line(linewidth = 0.3, linetype = 'solid', color = "black"),
+      panel.grid.major.x = element_blank(),
+      panel.grid.minor = element_blank(),
+      panel.border = element_rect(color = "black", fill = NA, size=0.8),
+      axis.title.x=element_text(size=15, color="black", family="Verdana", margin = margin(t = 7)),
+      axis.title.y=element_text(size=15, color="black", family="FOT-Matisse Pro UB", margin = margin(r = 10)),
+      axis.text.x=element_text(size=9, colour="black", family="Verdana"),
+      axis.text.y=element_text(size=10, colour="black", family="Verdana"),
+      legend.position = "none"
+      )+
+  guides(fill = guide_legend(reverse = TRUE))
+
+p_bottom<-ggplot(all_users_bottom, aes(x = reorder(name, -win_ratio_percent), y = win_ratio_percent, fill=tier))+
+  geom_bar(color = "black", stat = 'identity', size=0.3)+
+  geom_text(aes(label = win_ratio_percent), vjust = -0.5, family="Verdana")+
+  annotate("text", x = 3.65, y = 1.013, label = "*Only characters that have been played 50+ times are shown.", hjust = 0, vjust = 0, size = 3.5)+
+  scale_fill_manual(values = custom_colors, drop = FALSE)+
+  scale_y_continuous(expand = c(0, 0), limits = c(0, 1.05))+
+  labs(
+      title = "Characters with the\nLowest Win Ratios",
+      subtitle = "According to Personal Battle Data",
+      x = "Character",
+      fill = "Tier")+
+  theme(
+      plot.title = element_text(face="bold", size=25, colour="black", hjust=0.5, family="FOT-Matisse Pro UB"),
+      plot.subtitle = element_text(face="bold", size=10, colour="black", hjust=0.5, family="FOT-Matisse Pro UB"),
+      plot.background=element_rect(fill="#fff77f"),
+      plot.margin = margin(1.0, 1.0, 1.0, 0.3, "cm"),
+      panel.background = element_rect(fill = "#ffff9f", color = "#ffff9f"),
+      panel.grid.major = element_line(linewidth = 0.3, linetype = 'solid', color = "black"),
+      panel.grid.major.x = element_blank(),
+      panel.grid.minor = element_blank(),
+      panel.border = element_rect(color = "black", fill = NA, size=0.8),
+      axis.title.x=element_text(size=15, color="black", family="Verdana", margin = margin(t = 7)),
+      axis.title.y=element_blank(),
+      axis.text.x=element_text(size=9, colour="black", family="Verdana"),
+      axis.text.y=element_text(size=10, colour="black", family="Verdana"),
+      legend.text=element_text(size=10, family="FOT-Matisse Pro UB", colour="black"),
+      legend.title=element_text(size=18, family="FOT-Matisse Pro UB", colour="black"),
+      legend.background=element_rect(fill="#ffff9f",linewidth=0.4,linetype="solid",colour="black")
+      )+
+  guides(fill = guide_legend(reverse = TRUE))
+
+p_top+p_bottom
+#ggsave("smash_p_top_bottom.png", plot = p_top+p_bottom, width = 14, height = 8, units = "in", dpi = 300)
+
+```
+
+Plot 7. Avg KOs (Small)
+```{r}
+kos <- data.frame(
+  name = c(
+    "Mario", "Donkey Kong", "Link", "Samus", "Dark Samus", 
+    "Yoshi", "Kirby", "Fox", "Pikachu", "Luigi", 
+    "Ness", "Captain Falcon", "Jigglypuff", "Peach", "Daisy", 
+    "Bowser", "Ice Climbers", "Sheik", "Zelda", "Dr Mario",
+    "Pichu", "Falco", "Marth", "Lucina", "Young Link",
+    "Ganondorf", "Mewtwo", "Roy", "Chrom", "Mr Game & Watch",
+    "Meta Knight", "Pit", "Dark Pit", "Zero Suit Samus", "Wario", 
+    "Snake", "Ike", "Pokemon Trainer", "Diddy Kong", "Lucas", 
+    "Sonic", "King Dedede", "Olimar", "Lucario", "ROB", 
+    "Toon Link", "Wolf", "Villager", "Mega Man", "Wii Fit Trainer", 
+    "Rosalina & Luma", "Little Mac", "Greninja", "Mii Brawler", "Mii Swordfighter", 
+    "Mii Gunner", "Palutena", "Pac-Man", "Robin", "Shulk",
+    "Bowser Jr", "Duck Hunt", "Ryu", "Ken", "Cloud", 
+    "Corrin", "Bayonetta", "Inkling", "Ridley", "Simon", 
+    "Richter", "King K Rool", "Isabelle", "Incineroar", "Piranha Plant", 
+    "Joker", "Hero", "Banjo & Kazooie", "Terry", "Byleth", 
+    "Min Min", "Steve", "Sephiroth", "Pyra/Mythra", "Kazuya",
+    "Sora"
+  ),
+  tier = c(
+    "A+", "C-", "B-", "A+", "A+", 
+    "A+", "D+", "S", "S-", "B+", 
+    "B+", "B+", "C+", "S", "S", 
+    "B-", "B-", "A-", "D+", "D+", 
+    "B-", "B+", "B-", "A+", "A-", 
+    "D-", "C+", "S", "B+", "S-", 
+    "B-", "B-", "B-", "A+", "A+", 
+    "S-", "C-", "A+", "S-", "C+", 
+    "S", "D+", "A-", "C-", "S", 
+    "B-", "S-", "C-", "A-", "C+", 
+    "B-", "D-", "A-", "A-", "D+", 
+    "C+", "S-", "S-", "C+", "S-",
+    "C-", "C-", "A-", "A-", "S-",
+    "B+", "B+", "B+", "C+", "C-",
+    "C-", "D+", "D+", "C+", "D+", 
+    "S+", "B+", "C-", "A-", "A-", 
+    "S-", "S+", "A+", "S+", "S",
+    "A-"
+  ),
+  avg_kos = c(
+    2.93, 3.82, 2.11, 2.52, 2.76, 
+    2.22, 3.27, 2.58, 2.45, 2.77, 
+    3.32, 3.24, 3.17, 2.27, 2.17, 
+    2.49, 2.48, 1.97, 2.75, 2.48,
+    2.86, 2.65, 1.78, 2.70, 2.26,
+    4.19, 3.06, 2.64, 3.16, 2.42,
+    2.61, 1.95, 2.11, 2.04, 2.26, 
+    1.94, 3.38, 2.36, 2.35, 2.96, 
+    1.68, 2.67, 1.74, 2.12, 2.34, 
+    2.91, 2.74, 2.70, 2.00, 2.80, 
+    2.05, 2.29, 2.48, 2.40, 3.00, 
+    3.69, 2.14, 2.80, 1.78, 1.50,
+    1.77, 1.45, 1.51, 2.06, 2.19, 
+    1.71, 1.90, 2.03, 2.52, 2.00, 
+    1.42, 3.08, 2.44, 2.27, 2.92, 
+    2.79, 2.60, 3.09, 2.87, 3.29, 
+    2.61, 2.90, 2.78, 3.35, 1.90,
+    2.63)
+)
+
+kos$tier <- factor(kos$tier, levels = c("D-", "D+", "C-", "C+", "B-", "B+", "A-", "A+", "S-", "S", "S+"))
+kos<-kos[order(kos$avg_kos, decreasing = TRUE),]
+
+kos$path <-
+  paste0("/Users/spak/Downloads/School/F23/STAT3280/stockIcons/",
+         kos$name, ".png")
+
+p_kos<-ggplot(kos, aes(x = tier, y = avg_kos))+
+  geom_image(aes(image = path),
+      data = kos,
+      hjust = 0,
+      size = 0.06
+  )+
+  labs(
+    title = "Average KOs by Tier",
+    subtitle="Which Characters Have More Knockouts?",
+    x = "Tier",
+    y = "Average KOs per Battle")+
+  theme(
+    plot.title = element_text(face="bold", size=40, colour="#4d2d18", hjust=0.5, family="FOT-Matisse Pro UB", margin = margin(t = 15)), 
+    plot.subtitle = element_text(size=13, colour="#4d2d18", hjust=0.5, family="FOT-Matisse Pro UB", margin = margin(t = 6, b = 7)),
+    axis.title.x=element_text(size=24, color="#4d2d18", family="FOT-Matisse Pro UB", margin = margin(t = 10, b = 14)),
+    axis.title.y=element_text(size=24, color="#4d2d18", family="FOT-Matisse Pro UB", margin = margin(r = 10, l = 14)),
+    axis.text.x=element_text(face="bold", size=18, colour="#4d2d18", family="FOT-Matisse Pro UB"),
+    axis.text.y=element_text(face="bold", size=18, colour="#4d2d18", family="Arial Narrow"),
+  )+theme(
+    plot.background=element_rect(fill="#d49b7e"),
+    plot.margin = margin(0.5, 1, 0, 0.5, "cm"),
+    panel.background = element_rect(fill = "#ddb8a6", color = "#ddb8a6"),
+    panel.grid.major = element_line(color = "#4d2d18"), # Major Grid Lines
+    panel.grid.minor = element_blank(), # Minor Grid Lines gone
+    panel.border = element_rect(colour = "#4d2d18", fill=NA, size=0.7) # Border
+)
+
+p_kos
+ggsave("smash_kos.png", plot = p_kos, width = 12, height = 12, units = "in", dpi = 300)
+```
+
+Part 4. Competitive Character Viability
+
+Plot 8. Top 8's (Large, Interactive)
+```{r}
+
+base5<- data.frame(
+  name = c(
+    "Mario", "Donkey Kong", "Link", "Samus/\nDark\nSamus", 
+    "Yoshi", "Kirby", "Fox", "Pikachu", "Luigi", 
+    "Ness", "Captain Falcon", "Jigglypuff", "Peach/Daisy", 
+    "Bowser", "Ice Climbers", "Sheik", "Zelda", "Dr Mario",
+    "Pichu", "Falco", "Marth", "Lucina", "Young Link",
+    "Ganondorf", "Mewtwo", "Roy", "Chrom", "Mr. Game\n& Watch",
+    "Meta Knight", "Pit", "Dark Pit", "Zero Suit\nSamus", "Wario", 
+    "Snake", "Ike", "Pokemon\nTrainer", "Diddy Kong", "Lucas", 
+    "Sonic", "King Dedede", "Olimar", "Lucario", "R.O.B.", 
+    "Toon Link", "Wolf", "Villager", "Mega Man", "Wii Fit Trainer", 
+    "Rosalina\n& Luma", "Little Mac", "Greninja", "Mii Brawler", "Mii Swordfighter", 
+    "Mii Gunner", "Palutena", "Pac-Man", "Robin", "Shulk",
+    "Bowser Jr", "Duck Hunt", "Ryu", "Ken", "Cloud", 
+    "Corrin", "Bayonetta", "Inkling", "Ridley", "Simon", 
+    "Richter", "King K Rool", "Isabelle", "Incineroar", "Piranha Plant", 
+    "Joker", "Hero", "Banjo & Kazooie", "Terry", "Byleth", 
+    "Min Min", "Steve", "Sephiroth", "Pyra/Mythra", "Kazuya",
+    "Sora"
+  ),
+  tier = c(
+    "A+", "C-", "B-", "A+", 
+    "A+", "D+", "S", "S-", "B+", 
+    "B+", "B+", "C+", "S", 
+    "B-", "B-", "A-", "D+", "D+", 
+    "B-", "B+", "B-", "A+", "A-", 
+    "D-", "C+", "S", "B+", "S-", 
+    "B-", "B-", "B-", "A+", "A+", 
+    "S-", "C-", "A+", "S-", "C+", 
+    "S", "D+", "A-", "C-", "S", 
+    "B-", "S-", "C-", "A-", "C+", 
+    "B-", "D-", "A-", "A-", "D+", 
+    "C+", "S-", "S-", "C+", "S-",
+    "C-", "C-", "A-", "A-", "S-",
+    "B+", "B+", "B+", "C+", "C-",
+    "C-", "D+", "D+", "C+", "D+", 
+    "S+", "B+", "C-", "A-", "A-", 
+    "S-", "S+", "A+", "S+", "S",
+    "A-"
+  ),
+   major_top8 = c(
+    14, 6, 4, 12, 
+    8, 0, 37, 10, 5, 
+    10, 9, 2, 25, 
+    7, 3, 10, 0, 3, 
+    13, 5, 2, 33, 5, 
+    3, 1, 28, 10, 21, 
+    2, 0, 0, 36, 50, 
+    25, 7, 16, 11, 0, 
+    20, 2, 44, 1, 32, 
+    4, 27, 1, 14, 1, 
+    25, 0, 10, 1, 0, 
+    0, 42, 21, 1, 10,
+    1, 5, 5, 3, 18,
+    8, 4, 20, 2, 0,
+    0, 2, 1, 1, 1, 
+    36, 5, 2, 11, 15, 
+    16, 13, 13, 34, 16,
+    12
+  ),
+  company = c(
+    "Nintendo", "Nintendo", "Nintendo", "Nintendo",
+    "Nintendo", "Nintendo", "Nintendo", "Nintendo", "Nintendo", 
+    "Nintendo", "Nintendo", "Nintendo", "Nintendo",
+    "Nintendo", "Nintendo", "Nintendo", "Nintendo", "Nintendo", 
+    "Nintendo", "Nintendo", "Nintendo", "Nintendo", "Nintendo", 
+    "Nintendo", "Nintendo", "Nintendo", "Nintendo", "Nintendo", 
+    "Nintendo", "Nintendo", "Nintendo", "Nintendo", "Nintendo", 
+    "Konami", "Nintendo", "Nintendo", "Nintendo", "Nintendo",
+    "Sega", "Nintendo", "Nintendo", "Nintendo", "Nintendo", 
+    "Nintendo", "Nintendo", "Nintendo", "Capcom", "Nintendo", 
+    "Nintendo", "Nintendo", "Nintendo", "Nintendo", "Nintendo", 
+    "Nintendo", "Nintendo", "Bandai Namco", "Nintendo", "Nintendo",
+    "Nintendo", "Nintendo", "Capcom", "Capcom", "Square Enix",
+    "Nintendo", "Sega", "Nintendo", "Nintendo", "Konami",
+    "Konami", "Nintendo", "Nintendo", "Nintendo", "Nintendo", 
+    "Sega", "Square Enix", "Microsoft", "SNK", "Nintendo", 
+    "Nintendo", "Microsoft", "Square Enix", "Nintendo", "Bandai Namco",
+    "Square Enix"
+  ),
+  players = c(
+    "Kurama, Dark Wizzy", "none", "none", "quiK",
+    "Yoshidora", "none", "Light", "ESAM", "Luugi", 
+    "none", "Fatality", "none", "Muteace, Samsora, Umeki", 
+    "Hero", "none", "Eim", "none", "none",
+    "Nietono, VoiD", "none", "none", "MkLeo, ProtoBanham", "none",
+    "none", "none", "Kola", "none", "Miya, Maister",
+    "Abadango", "none", "none", "Marss, Kuro", "Glutonny, Tweek, Abadango", 
+    "Ally, Hurt", "MkLeo", "Atelier, Quidd", "Tweek", "none", 
+    "Sonix, KEN", "Peli", "Shuton, Dabuz, Myran", "none", "Zomba, Anathema, zackray", 
+    "none", "zackray, Jakal", "none", "Kameme", "none", 
+    "Dabuz", "none", "none", "none", "none", 
+    "none", "Nairo", "Tea", "none", "Kome",
+    "none", "none", "Asimo", "none", "Sparg0", 
+    "MkLeo", "Bloom4Eva", "Shirayuki", "none", "none", 
+    "none", "none", "none", "Skyjay", "Brood", 
+    "MkLeo, zackray", "none", "none", "Riddles", "MkLeo, Rizeasu", 
+    "ProtoBanham", "acola, Onin", "KEN", "MkLeo, Shuton, Cosmos", "Riddles",
+    "Kameme, zackray"
+    )
+)
+
+base5$tier <- factor(base5$tier, levels = c("D-", "D+", "C-", "C+", "B-", "B+", "A-", "A+", "S-", "S", "S+"))
+base5<-base5[order(base5$major_top8, decreasing = TRUE),]
+base5<-base5[1:15,]
+base5$name <- factor(base5$name, levels = unique(base5$name)[order(base5$major_top8, decreasing = FALSE)])
+
+p_top8 <- plot_ly(
+    data = base5,
+    x = ~major_top8,
+    y = ~name,
+    size = 10,
+    type = "bar",
+    color = ~tier,
+    colors = c("#f9ffb5", "#b3f5bc", "#c3f5dc", "#D6F6FF", "#BEE0FF", "#a0c4ff"),
+    text = ~paste("Name:", name,
+                  "<br>Company:", company,
+                  "<br>Tier:", tier,
+                  "<br>Notable Players:", players
+                  ),
+    hoverinfo = "text",
+    marker = list(line = list(color = "#00007b",
+                                  width = 1.0)),
+    width = 900,
+    height = 750
+  )%>%layout(
+    title = list(
+      text = "Top 8s in Majors by Character",
+      font = list(
+        family = "FOT-Matisse Pro UB",
+        size = 30,
+        color = "#00007b"
+      )
+    ),
+    xaxis = list(
+      title = list(
+        text = "Frequency",
+        font = list(
+          family = "FOT-Matisse Pro UB",
+          size = 22,
+          color = "#00007b"
+        )
+      ),
+      tickfont = list(
+        family = "Verdana",
+        size = 15,
+        color = "#00007b"
+      )
+    ),
+    yaxis = list(
+      title = list(
+        text = "Character",
+        font = list(
+          family = "FOT-Matisse Pro UB",
+          size = 22,
+        color = "#00007b"
+        )
+      ),
+      tickfont = list(
+        family = "Verdana",
+        size = 15,
+        color = "#00007b"
+      )
+    ),
+    hoverlabel = list(align = "left"),
+    paper_bgcolor = '#cbe6ff',
+    plot_bgcolor = '#e4f3ff',
+    margin = list(l = 100,
+                  r = 100,
+                  b = 100,
+                  t = 100,
+                  pad = 4)
+    )
+p_top8
+```
+
+Pre-Plot 9. Major Wins/2nds over Time
+```{r}
+maj1=data.frame(
+  name = c(
+      "Mario", "Donkey Kong", "Link", "Samus", "Dark Samus", 
+      "Yoshi", "Kirby", "Fox", "Pikachu", "Luigi", 
+      "Ness", "Capt. Falcon", "Jigglypuff", "Peach", "Daisy", 
+      "Bowser", "Ice Climbers", "Sheik", "Zelda", "Dr. Mario",
+      "Pichu", "Falco", "Marth", "Lucina", "Young Link",
+      "Ganondorf", "Mewtwo", "Roy", "Chrom", "Mr. Game & Watch",
+      "Meta Knight", "Pit", "Dark Pit", "Zero Suit Samus", "Wario", 
+      "Snake", "Ike", "Pokemon Trainer", "Diddy Kong", "Lucas", 
+      "Sonic", "King Dedede", "Olimar", "Lucario", "R.O.B.", 
+      "Toon Link", "Wolf", "Villager", "Mega Man", "Wii Fit Trainer", 
+      "Rosalina & Luma", "Little Mac", "Greninja", "Mii Brawler", "Mii Swordfighter", 
+      "Mii Gunner", "Palutena", "Pac-Man", "Robin", "Shulk",
+      "Bowser Jr", "Duck Hunt", "Ryu", "Ken", "Cloud", 
+      "Corrin", "Bayonetta", "Inkling", "Ridley", "Simon", 
+      "Richter", "King K. Rool", "Isabelle", "Incineroar", "Piranha Plant", 
+      "Joker", "Hero", "Banjo & Kazooie", "Terry", "Byleth", 
+      "Min Min", "Steve", "Sephiroth", "Pyra/Mythra", "Kazuya",
+      "Sora"
+  )
+)
+
+names <- maj1[rep(seq_len(nrow(maj1)), 6), ]
+years <- rep(2018:2023, each = 86)
+
+major_wins<-data.frame(
+  name = names,
+  year = years
+)
+
+major_wins$total_wins<-c(
+  #2018
+  0, 0, 0, 0, 0,
+  0, 0, 0, 0, 0,
+  0, 0, 0, 0, 0,
+  0, 0, 0, 0, 0,
+  0, 0, 0, 0, 0,
+  0, 0, 0, 0, 0,
+  0, 0, 0, 0, 1,
+  0, 0, 0, 0, 0,
+  0, 0, 0, 0, 0,
+  0, 0, 0, 0, 0,
+  0, 0, 0, 0, 0,
+  0, 0, 0, 0, 0,
+  0, 0, 0, 0, 0,
+  0, 0, 0, 0, 0,
+  0, 0, 0, 0, 0,
+  0, 0, 0, 0, 0,
+  0, 0, 0, 0, 0,
+  0,
+  #2019
+  0, 0, 0, 0, 0,
+  0, 0, 0, 1, 0,
+  0, 0, 0, 1, 0,
+  0, 0, 0, 0, 0,
+  1, 0, 0, 1, 0,
+  0, 0, 0, 0, 0,
+  0, 0, 0, 4, 7, 
+  1, 1, 1, 0, 0, 
+  0, 0, 2, 0, 1,
+  0, 1, 0, 2, 0,
+  0, 0, 0, 0, 0,
+  0, 1, 1, 0, 0,
+  0, 0, 0, 0, 0,
+  0, 0, 0, 0, 0,
+  0, 0, 0, 0, 0,
+  9, 0, 0, 0, 0,
+  0, 0, 0, 0, 0,
+  0,
+  #2020
+  0, 0, 0, 0, 0,
+  0, 0, 0, 1, 0,
+  0, 0, 0, 1, 0,
+  0, 0, 0, 0, 0,
+  1, 0, 0, 1, 0,
+  0, 0, 0, 0, 0,
+  0, 0, 0, 5, 8, 
+  1, 1, 1, 0, 0, 
+  0, 0, 3, 0, 2,
+  0, 1, 0, 2, 0,
+  0, 0, 0, 0, 0,
+  0, 2, 1, 0, 0,
+  0, 0, 0, 0, 0,
+  0, 0, 0, 0, 0,
+  0, 0, 0, 0, 0,
+  10, 0, 0, 0, 0,
+  0, 0, 0, 0, 0,
+  0,
+  #2021
+  0, 0, 0, 0, 0,
+  0, 0, 1, 2, 0,
+  0, 0, 0, 1, 0,
+  0, 0, 0, 0, 0,
+  1, 0, 0, 3, 0,
+  0, 0, 1, 0, 0,
+  0, 0, 0, 5, 9, 
+  1, 1, 1, 1, 0, 
+  0, 1, 3, 0, 2,
+  0, 1, 0, 2, 0,
+  0, 0, 0, 0, 0,
+  0, 2, 3, 0, 0,
+  0, 0, 0, 0, 0,
+  0, 0, 0, 0, 0,
+  0, 0, 0, 0, 0,
+  10, 0, 0, 0, 5,
+  1, 0, 0, 0, 0,
+  1,
+  #2022
+  0, 0, 0, 0, 0,
+  1, 0, 2, 2, 0,
+  0, 0, 0, 1, 0,
+  0, 0, 0, 0, 0,
+  1, 0, 0, 4, 0,
+  0, 0, 1, 0, 2,
+  0, 0, 0, 5, 10, 
+  1, 1, 2, 2, 0, 
+  1, 1, 3, 0, 2,
+  0, 1, 0, 2, 0,
+  0, 0, 0, 0, 0,
+  0, 2, 6, 0, 0,
+  0, 0, 0, 0, 5,
+  1, 1, 0, 0, 0,
+  0, 0, 0, 0, 0,
+  12, 0, 0, 0, 9,
+  2, 9, 1, 4, 1,
+  1,
+  #2023
+  0, 0, 0, 0, 0,
+  1, 0, 3, 2, 0,
+  0, 0, 0, 1, 0,
+  0, 0, 0, 0, 0,
+  1, 0, 0, 4, 0,
+  0, 0, 1, 0, 11,
+  0, 0, 0, 5, 12, 
+  1, 1, 2, 3, 0, 
+  3, 1, 4, 0, 3,
+  0, 1, 0, 2, 0,
+  0, 0, 0, 0, 0,
+  0, 2, 6, 0, 0,
+  0, 0, 0, 0, 11,
+  1, 1, 0, 0, 0,
+  0, 0, 0, 0, 0,
+  13, 0, 0, 0, 9,
+  2, 18, 1, 5, 2,
+  1
+)
+
+major_wins$seconds<-c(
+  #2018
+  0, 0, 0, 0, 0,
+  0, 0, 0, 0, 0,
+  0, 0, 0, 0, 0,
+  0, 0, 0, 0, 0,
+  0, 0, 0, 0, 0,
+  0, 0, 0, 0, 0,
+  0, 0, 0, 0, 0,
+  0, 0, 0, 0, 0,
+  0, 0, 1, 0, 0,
+  0, 0, 0, 0, 0,
+  0, 0, 0, 0, 0,
+  0, 0, 0, 0, 0,
+  0, 0, 0, 0, 0,
+  0, 0, 0, 0, 0,
+  0, 0, 0, 0, 0,
+  0, 0, 0, 0, 0,
+  0, 0, 0, 0, 0,
+  0,
+  #2019
+  0, 0, 0, 1, 0,
+  0, 0, 1, 0, 0,
+  0, 0, 0, 4, 0,
+  0, 0, 0, 0, 0,
+  1, 0, 0, 2, 0,
+  0, 0, 0, 0, 0,
+  0, 0, 0, 3, 4,
+  0, 1, 1, 0, 0,
+  1, 0, 7, 0, 0,
+  0, 2, 0, 1, 0,
+  0, 0, 0, 0, 0,
+  0, 1, 1, 0, 0,
+  0, 0, 0, 0, 0,
+  0, 0, 0, 0, 0,
+  0, 0, 0, 0, 1,
+  3, 0, 0, 0, 0,
+  0, 0, 0, 0, 0,
+  0,
+  #2020
+  1, 0, 0, 1, 0,
+  0, 0, 1, 0, 0,
+  0, 0, 0, 4, 0,
+  0, 0, 0, 0, 0,
+  1, 0, 0, 2, 0,
+  0, 0, 0, 0, 1,
+  0, 0, 0, 3, 4,
+  0, 1, 1, 0, 0,
+  1, 0, 7, 0, 0,
+  0, 2, 0, 1, 0,
+  1, 0, 0, 0, 0,
+  0, 2, 1, 0, 1,
+  0, 0, 0, 0, 0,
+  0, 0, 0, 0, 0,
+  0, 0, 0, 0, 1,
+  4, 0, 0, 0, 0,
+  0, 0, 0, 0, 0,
+  0,
+  #2021
+  1, 0, 0, 1, 0,
+  0, 0, 1, 0, 0,
+  0, 1, 0, 4, 0,
+  0, 0, 1, 0, 0,
+  1, 0, 0, 2, 0,
+  0, 0, 0, 0, 1,
+  0, 0, 0, 3, 7,
+  0, 1, 3, 1, 0,
+  1, 0, 9, 0, 0,
+  0, 2, 0, 1, 0,
+  1, 0, 0, 0, 0,
+  0, 2, 1, 0, 1,
+  0, 0, 0, 0, 1,
+  0, 0, 0, 0, 0,
+  0, 0, 0, 0, 1,
+  5, 0, 0, 0, 1,
+  0, 0, 0, 4, 0,
+  0,
+  #2022
+  2, 0, 0, 2, 0,
+  0, 0, 5, 0, 0,
+  0, 1, 0, 4, 1,
+  1, 1, 1, 0, 0,
+  1, 0, 0, 2, 0,
+  0, 0, 2, 0, 5,
+  1, 0, 0, 3, 10,
+  0, 1, 3, 4, 0,
+  1, 0, 10, 0, 2,
+  0, 2, 0, 1, 0,
+  4, 0, 0, 0, 0,
+  0, 3, 2, 0, 1,
+  0, 0, 1, 0, 2,
+  0, 0, 1, 0, 0,
+  0, 0, 0, 0, 1,
+  5, 0, 0, 1, 3,
+  0, 2, 0, 7, 0,
+  0,
+  #2023
+  2, 0, 0, 2, 0,
+  2, 0, 5, 0, 1,
+  0, 1, 0, 5, 1,
+  1, 1, 1, 0, 0,
+  1, 0, 0, 2, 0,
+  0, 0, 2, 0, 8,
+  1, 0, 0, 3, 12,
+  1, 1, 3, 6, 0,
+  4, 0, 11, 0, 2,
+  0, 3, 0, 1, 0,
+  5, 0, 0, 0, 0,
+  0, 3, 3, 0, 1,
+  0, 0, 3, 0, 3,
+  0, 0, 1, 0, 0,
+  0, 0, 0, 1, 1,
+  5, 0, 0, 1, 4,
+  1, 5, 1, 10, 1,
+  2
+)
+
+major_wins$company<-rep(c(
+    "Nintendo", "Nintendo", "Nintendo", "Nintendo", "Nintendo", 
+    "Nintendo", "Nintendo", "Nintendo", "Nintendo", "Nintendo", 
+    "Nintendo", "Nintendo", "Nintendo", "Nintendo", "Nintendo", 
+    "Nintendo", "Nintendo", "Nintendo", "Nintendo", "Nintendo", 
+    "Nintendo", "Nintendo", "Nintendo", "Nintendo", "Nintendo", 
+    "Nintendo", "Nintendo", "Nintendo", "Nintendo", "Nintendo", 
+    "Nintendo", "Nintendo", "Nintendo", "Nintendo", "Nintendo", 
+    "Konami", "Nintendo", "Nintendo", "Nintendo", "Nintendo",
+    "Sega", "Nintendo", "Nintendo", "Nintendo", "Nintendo", 
+    "Nintendo", "Nintendo", "Nintendo", "Capcom", "Nintendo", 
+    "Nintendo", "Nintendo", "Nintendo", "Nintendo", "Nintendo", 
+    "Nintendo", "Nintendo", "Bandai Namco", "Nintendo", "Nintendo",
+    "Nintendo", "Nintendo", "Capcom", "Capcom", "Square Enix",
+    "Nintendo", "Sega", "Nintendo", "Nintendo", "Konami",
+    "Konami", "Nintendo", "Nintendo", "Nintendo", "Nintendo", 
+    "Sega", "Square Enix", "Microsoft", "SNK", "Nintendo", 
+    "Nintendo", "Microsoft", "Square Enix", "Nintendo", "Bandai Namco",
+    "Square Enix"
+  ), 6)
+major_wins$tier<-rep(c(
+    "A", "C", "B", "A", "A", 
+    "A", "D", "S", "S", "B", 
+    "B", "B", "C", "S", "S", 
+    "B", "B", "A", "D", "D", 
+    "B", "B", "B", "A", "A", 
+    "D", "C", "S", "B", "S", 
+    "B", "B", "B", "A", "A", 
+    "S", "C", "A", "S", "C", 
+    "S", "D", "A", "C", "S", 
+    "B", "S", "C", "A", "C", 
+    "B", "D", "A", "A", "D", 
+    "C", "S", "S", "C", "S",
+    "C", "C", "A", "A", "S",
+    "B", "B", "B", "C", "C",
+    "C", "D", "D", "C", "D", 
+    "S", "B", "C", "A", "A", 
+    "S", "S", "A", "S", "S",
+    "A"
+  ), 6)
+major_wins$tier <- factor(major_wins$tier, levels = c("D", "C", "B", "A","S"))
+
+major_wins$players<-rep(c(
+    "Kurama, Dark Wizzy", "none", "none", "quiK", "none", 
+    "Yoshidora", "none", "Light", "ESAM", "Luugi", 
+    "none", "Fatality", "none", "Muteace, Samsora", "Umeki", 
+    "Hero", "none", "Eim", "none", "none",
+    "Nietono, VoiD", "none", "none", "MkLeo, ProtoBanham", "none",
+    "none", "none", "Kola", "none", "Miya, Maister",
+    "Abadango", "none", "none", "Marss, Kuro", "Glutonny, Tweek, Abadango", 
+    "Ally, Hurt", "MkLeo", "Atelier, Quidd", "Tweek", "none", 
+    "Sonix, KEN", "Peli", "Shuton, Dabuz, Myran", "none", "Zomba, Anathema, zackray", 
+    "none", "zackray, Jakal", "none", "Kameme", "none", 
+    "Dabuz", "none", "none", "none", "none", 
+    "none", "Nairo", "Tea", "none", "Kome",
+    "none", "none", "Asimo", "none", "Sparg0", 
+    "MkLeo", "Bloom4Eva", "Shirayuki", "none", "none", 
+    "none", "none", "none", "Skyjay", "Brood", 
+    "MkLeo, zackray", "none", "none", "Riddles", "MkLeo, Rizeasu", 
+    "ProtoBanham", "acola, Onin", "KEN", "MkLeo, Shuton, Cosmos", "Riddles",
+    "Kameme, zackray"
+  ), 6)
+```
+Plot 9. Major Wins/2nds over Time (Large, Animated)
+```{r}
+major_wins_and_seconds <- plot_ly(
+    data = major_wins,
+    x = ~total_wins,
+    y = ~seconds,
+    type = "scatter",
+    mode = 'markers',
+    size = 10,
+    color = ~tier,
+    colors = c("#d78d72", "#cfd669", "#e9efa5", "#a3d5bc", "#a0b4ef"),
+    frame = ~years,
+    text = ~paste("Name:", names,
+                  "<br>Company:", company,
+                  "<br>Tier:", tier,
+                  "<br>Total Major Wins:", total_wins,
+                  "<br>Total Major 2nds:", seconds,
+                  "<br>Notable Players:", players
+                  ),
+    hoverinfo = "text",
+    width = 900,
+    height = 750
+  )%>%animation_opts(frame = 1200,
+                 redraw = TRUE,
+                 easing = "linear"
+  )%>%layout(
+    title = list(
+      text = "Major Tournament Wins and Runner-ups over Time",
+      font = list(
+        family = "FOT-Matisse Pro UB",
+        size = 25,
+        color = "#2a0134"
+      )
+    ),
+    xaxis = list(
+      title = list(
+        text = "Major Wins",
+        font = list(
+          family = "FOT-Matisse Pro UB",
+          size = 18,
+        color = "#2a0134"
+        )
+      ),
+      tickfont = list(
+        family = "Verdana",
+        size = 10,
+        color = "#2a0134"
+      )
+    ),
+    yaxis = list(
+      title = list(
+        text = "Major Runner-ups",
+        font = list(
+          family = "FOT-Matisse Pro UB",
+          size = 15,
+        color = "#2a0134"
+        )
+      ),
+      tickfont = list(
+        family = "Verdana",
+        size = 10,
+        color = "#2a0134"
+      )
+    ),
+    hoverlabel = list(align = "left"),
+    paper_bgcolor = '#efdbff',
+    plot_bgcolor = '#f3ebff',
+    margin = list(l = 100,
+                  r = 100,
+                  b = 100,
+                  t = 100,
+                  pad = 4)
+    )
+major_wins_and_seconds
+```
+
+Note: Most of the plots, when displayed on RStudio, are disproportionate/look wrong. All of the non-plotly graphs were downloaded using ggsave, using proper dimensions, to make the graphs that are in the final document.
+
+
+
